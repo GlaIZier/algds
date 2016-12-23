@@ -1,9 +1,12 @@
 package ru.glaizier.alg.sort.string;
 
+import java.util.Comparator;
+import java.util.List;
+
 public class Lsd implements StringSort {
 
     @Override
-    public void sort(String[] a) {
+    public void sort(List<String> a, Comparator<String> c) {
 
     }
 

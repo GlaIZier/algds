@@ -1,4 +1,4 @@
-package ru.glaizier.alg.sort.string;
+package ru.glaizier.algds.alg.sort.string;
 
 import java.util.Comparator;
 import java.util.List;

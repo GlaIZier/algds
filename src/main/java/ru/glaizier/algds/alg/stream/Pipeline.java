@@ -9,6 +9,12 @@ public class Pipeline<T> implements Stream<T> {
 
     private final Spliterator<T> spliterator;
 
+    private static class Operation<IN, OUT> {
+//        OUT apply(IN in) {
+//
+//        }
+    }
+
     public Pipeline(Spliterator<T> spliterator) {
         this.spliterator = spliterator;
     }

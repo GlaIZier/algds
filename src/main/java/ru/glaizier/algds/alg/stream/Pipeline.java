@@ -1,36 +1,84 @@
 package ru.glaizier.algds.alg.stream;
 
+import java.util.LinkedList;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public class Pipeline<T> implements Stream<T> {
+public class Pipeline<OUT> implements Stream<OUT> {
 
-    private final Spliterator<T> spliterator;
+    private final Spliterator<OUT> spliterator;
 
-    private static class Operation<IN, OUT> {
-//        OUT apply(IN in) {
-//
-//        }
+    private LinkedList<Operation<?, ?>> operations = new LinkedList<>();
+
+    private static abstract class Operation<IN, OUT> {
+        protected Operation<OUT, ?> downstream = null;
+
+        public void setDownstream(Operation<OUT, ?> downstream) {
+            this.downstream = downstream;
+        }
+
+        abstract void apply(IN in);
     }
 
-    public Pipeline(Spliterator<T> spliterator) {
+    public Pipeline(Spliterator<OUT> spliterator) {
         this.spliterator = spliterator;
     }
 
+    private Pipeline(Spliterator<OUT> spliterator, LinkedList<Operation<?, ?>> operations) {
+        this.spliterator = spliterator;
+        this.operations = operations;
+    }
+
+    @SuppressWarnings("unchecked")
     @Override
-    public Stream<T> filter(Predicate<? super T> predicate) {
+    public Stream<OUT> filter(Predicate<? super OUT> predicate) {
+        Operation<OUT, OUT> filter = new Operation<OUT, OUT>() {
+            @Override
+            void apply(OUT in) {
+                if (predicate.test(in)) {
+                    downstream.apply(in);
+                }
+            }
+        };
+        Operation<?, OUT> last = (Operation<?, OUT>) operations.peekLast();
+        if (last != null) {
+            last.setDownstream(filter);
+        }
+        operations.add(filter);
+        return new Pipeline<>(spliterator, operations);
+    }
+
+    @Override
+    public <R> Stream<R> map(Function<? super OUT, ? extends R> mapper) {
+        Operation<OUT, R> map = new Operation<OUT, R>() {
+            @Override
+            void apply(OUT in) {
+                downstream.apply(mapper.apply(in));
+            }
+        };
+        Operation<?, OUT> last = (Operation<?, OUT>) operations.peekLast();
+        if (last != null) {
+            last.setDownstream(map);
+        }
+        operations.add(map);
+//        return new Pipeline<R>(spliterator, operations);
         return null;
     }
 
     @Override
-    public <R> Stream<R> map(Function<? super T, ? extends R> mapper) {
-        return null;
+    public void forEach(Consumer<? super OUT> action) {
+
     }
 
-    @Override
-    public void forEach(Consumer<? super T> action) {
-
+    public static void main(String[] args) {
+        LinkedList<?> a = new LinkedList<Integer>();
+        Function<?, ?> b = new Function<Integer, Integer>() {
+            @Override
+            public Integer apply(Integer integer) {
+                return integer + 1;
+            }
+        };
     }
 }

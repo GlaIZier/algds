@@ -1,4 +1,4 @@
-package ru.glaizier.algds.alg.stream;
+package ru.glaizier.algds.alg.stream.spliterator;
 
 import java.util.*;
 import java.util.function.Consumer;

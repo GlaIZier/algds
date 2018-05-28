@@ -1,11 +1,13 @@
 package ru.glaizier.algds.alg.stream;
 
 import java.util.Collection;
-import java.util.List;
+
+import ru.glaizier.algds.alg.stream.pipeline.Head;
+import ru.glaizier.algds.alg.stream.spliterator.IteratorSpliterator;
 
 public class StreamFactory {
 
     public static <T> Stream<T> of(Collection<T> list) {
-        return new Pipeline<>(new IteratorSpliterator<>(list, 0));
+        return new Head<>(new IteratorSpliterator<>(list, 0));
     }
 }

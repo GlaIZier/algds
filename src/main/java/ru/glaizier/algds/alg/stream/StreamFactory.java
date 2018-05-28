@@ -5,7 +5,7 @@ import java.util.List;
 
 public class StreamFactory {
 
-    <T> Stream<T> of(Collection<T> list) {
+    public static <T> Stream<T> of(Collection<T> list) {
         return new Pipeline<>(new IteratorSpliterator<>(list, 0));
     }
 }

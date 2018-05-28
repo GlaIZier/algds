@@ -1,5 +1,6 @@
 package ru.glaizier.algds.alg.stream;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Spliterator;
 import java.util.function.Consumer;
@@ -50,6 +51,7 @@ public class Pipeline<IN, OUT> implements Stream<OUT> {
         return new Pipeline<>(spliterator, operations);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <R> Stream<R> map(Function<? super OUT, ? extends R> mapper) {
         Operation<OUT, R> map = new Operation<OUT, R>() {
@@ -66,18 +68,27 @@ public class Pipeline<IN, OUT> implements Stream<OUT> {
         return new Pipeline<>(spliterator, operations);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void forEach(Consumer<? super OUT> action) {
+        Operation<OUT, OUT> forEach = new Operation<OUT, OUT>() {
+            @Override
+            void apply(OUT in) {
+                action.accept(in);
+            }
+        };
 
+        Operation<?, OUT> last = (Operation<?, OUT>) operations.getLast();
+        last.setDownstream(forEach);
+
+        Operation<IN, ?> first = (Operation<IN, ?>) operations.getFirst();
+        spliterator.forEachRemaining(first::apply);
     }
 
     public static void main(String[] args) {
-        LinkedList<?> a = new LinkedList<Integer>();
-        Function<?, ?> b = new Function<Integer, Integer>() {
-            @Override
-            public Integer apply(Integer integer) {
-                return integer + 1;
-            }
-        };
+        StreamFactory.of(Arrays.asList(1, 2, 3, 4, 5, 6, 7))
+            .filter(i -> i >= 3)
+            .map(i -> i * -1)
+            .forEach(System.out::println);
     }
 }

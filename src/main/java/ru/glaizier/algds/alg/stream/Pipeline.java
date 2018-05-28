@@ -6,9 +6,9 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public class Pipeline<OUT> implements Stream<OUT> {
+public class Pipeline<IN, OUT> implements Stream<OUT> {
 
-    private final Spliterator<OUT> spliterator;
+    private final Spliterator<IN> spliterator;
 
     private LinkedList<Operation<?, ?>> operations = new LinkedList<>();
 
@@ -22,11 +22,11 @@ public class Pipeline<OUT> implements Stream<OUT> {
         abstract void apply(IN in);
     }
 
-    public Pipeline(Spliterator<OUT> spliterator) {
+    public Pipeline(Spliterator<IN> spliterator) {
         this.spliterator = spliterator;
     }
 
-    private Pipeline(Spliterator<OUT> spliterator, LinkedList<Operation<?, ?>> operations) {
+    private Pipeline(Spliterator<IN> spliterator, LinkedList<Operation<?, ?>> operations) {
         this.spliterator = spliterator;
         this.operations = operations;
     }
@@ -63,8 +63,7 @@ public class Pipeline<OUT> implements Stream<OUT> {
             last.setDownstream(map);
         }
         operations.add(map);
-//        return new Pipeline<R>(spliterator, operations);
-        return null;
+        return new Pipeline<>(spliterator, operations);
     }
 
     @Override

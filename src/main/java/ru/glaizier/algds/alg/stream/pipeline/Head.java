@@ -12,7 +12,7 @@ public class Head<IN> extends Pipeline<IN, IN> implements Stream<IN> {
     private final Spliterator<IN> spliterator;
 
     public Head(Spliterator<IN> spliterator) {
-        super(null);
+        super(null, false);
         this.spliterator = spliterator;
     }
 

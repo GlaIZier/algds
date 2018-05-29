@@ -1,6 +1,11 @@
 package ru.glaizier.algds.alg.stream.spliterator;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Spliterator;
 import java.util.function.Consumer;
 
 public class IteratorSpliterator<T> implements Spliterator<T> {
@@ -54,7 +59,7 @@ public class IteratorSpliterator<T> implements Spliterator<T> {
         for (int i = 0; i < newSpliteratorSize && iterator.hasNext(); i++)
             list.add(iterator.next());
         estimateSize -= list.size();
-        return new IteratorSpliterator<T>(list, characteristics);
+        return new IteratorSpliterator<>(list, characteristics);
     }
 
     @Override

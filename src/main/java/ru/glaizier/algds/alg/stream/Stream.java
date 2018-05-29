@@ -7,6 +7,8 @@ import java.util.stream.Collector;
 
 public interface Stream<T> {
 
+    Stream<T> parallel();
+
     Stream<T> filter(Predicate<? super T> predicate);
 
     <R> Stream<R> map(Function<? super T, ? extends R> mapper);

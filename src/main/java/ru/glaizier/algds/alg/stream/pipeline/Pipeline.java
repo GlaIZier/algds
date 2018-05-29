@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Spliterator;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ForkJoinPool;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -18,8 +20,11 @@ abstract class Pipeline<IN, OUT> implements Stream<OUT> {
 
     protected Pipeline<OUT, ?> downstream;
 
-    protected Pipeline(Pipeline<?, IN> upstream) {
+    private boolean parallel = false;
+
+    protected Pipeline(Pipeline<?, IN> upstream, boolean parallel) {
         this.upstream = upstream;
+        this.parallel = parallel;
     }
 
     abstract void apply(IN in);
@@ -42,8 +47,14 @@ abstract class Pipeline<IN, OUT> implements Stream<OUT> {
     }
 
     @Override
+    public Stream<OUT> parallel() {
+        parallel = true;
+        return this;
+    }
+
+    @Override
     public Stream<OUT> filter(Predicate<? super OUT> predicate) {
-        Pipeline<OUT, OUT> filter = new Pipeline<OUT, OUT>(this) {
+        Pipeline<OUT, OUT> filter = new Pipeline<OUT, OUT>(this, parallel) {
             @Override
             void apply(OUT in) {
                 if (predicate.test(in)) {
@@ -57,7 +68,7 @@ abstract class Pipeline<IN, OUT> implements Stream<OUT> {
 
     @Override
     public <R> Stream<R> map(Function<? super OUT, ? extends R> mapper) {
-        Pipeline<OUT, R> map = new Pipeline<OUT, R>(this) {
+        Pipeline<OUT, R> map = new Pipeline<OUT, R>(this, parallel) {
             @Override
             void apply(OUT in) {
                 this.downstream.apply(mapper.apply(in));
@@ -69,7 +80,7 @@ abstract class Pipeline<IN, OUT> implements Stream<OUT> {
 
     @Override
     public void forEach(Consumer<? super OUT> action) {
-        Collection<OUT> terminated = terminate();
+        Collection<OUT> terminated = parallel ? terminateParallel() : terminate();
         for (OUT out : terminated) {
             action.accept(out);
         }
@@ -77,7 +88,7 @@ abstract class Pipeline<IN, OUT> implements Stream<OUT> {
 
     @Override
     public <R, A> R collect(Collector<? super OUT, A, ? extends R> collector) {
-        Collection<OUT> terminated = terminate();
+        Collection<OUT> terminated = parallel ? terminateParallel() : terminate();
         A accumulator = collector.supplier().get();
         for (OUT out : terminated) {
             collector.accumulator().accept(accumulator, out);
@@ -91,7 +102,7 @@ abstract class Pipeline<IN, OUT> implements Stream<OUT> {
         Spliterator<IN> spliterator = head.getSpliterator();
 
         List<OUT> list = new ArrayList<>(Math.toIntExact(spliterator.getExactSizeIfKnown()));
-        Pipeline<OUT, OUT> collect = new Pipeline<OUT, OUT>(this) {
+        Pipeline<OUT, OUT> collect = new Pipeline<OUT, OUT>(this, parallel) {
             @Override
             void apply(OUT in) {
                 list.add(in);
@@ -102,13 +113,29 @@ abstract class Pipeline<IN, OUT> implements Stream<OUT> {
         return list;
     }
 
+    private Collection<OUT> terminateParallel() {
+        Head<IN> head = getHead();
+        Spliterator<IN> spliterator = head.getSpliterator();
+
+        Collection<OUT> collection = new ConcurrentSkipListSet<>();
+        Pipeline<OUT, OUT> collect = new Pipeline<OUT, OUT>(this, parallel) {
+            @Override
+            void apply(OUT in) {
+                collection.add(in);
+            }
+        };
+        setDownstream(collect);
+        new ForkJoinPool().invoke(new StreamRecursiveAction<>(spliterator, head::apply));
+        return collection;
+    }
+
 
     /**
      * Previous sequential implementation
      * @param action
      */
     public void forEachSeq(Consumer<? super OUT> action) {
-        Pipeline<OUT, OUT> forEach = new Pipeline<OUT, OUT>(this) {
+        Pipeline<OUT, OUT> forEach = new Pipeline<OUT, OUT>(this, parallel) {
             @Override
             void apply(OUT in) {
                 action.accept(in);
@@ -121,7 +148,7 @@ abstract class Pipeline<IN, OUT> implements Stream<OUT> {
     public <R, A> R collectSeq(Collector<? super OUT,  A, ? extends R> collector) {
         A accumulator = collector.supplier().get();
         final BiConsumer<A, ? super OUT> accumulatorFunc = collector.accumulator();
-        Pipeline<OUT, OUT> collect = new Pipeline<OUT, OUT>(this) {
+        Pipeline<OUT, OUT> collect = new Pipeline<OUT, OUT>(this, parallel) {
             @Override
             void apply(OUT in) {
                 accumulatorFunc.accept(accumulator, in);

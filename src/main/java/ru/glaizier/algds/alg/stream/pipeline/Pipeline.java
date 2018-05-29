@@ -1,5 +1,9 @@
 package ru.glaizier.algds.alg.stream.pipeline;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Spliterator;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -65,6 +69,45 @@ abstract class Pipeline<IN, OUT> implements Stream<OUT> {
 
     @Override
     public void forEach(Consumer<? super OUT> action) {
+        Collection<OUT> terminated = terminate();
+        for (OUT out : terminated) {
+            action.accept(out);
+        }
+    }
+
+    @Override
+    public <R, A> R collect(Collector<? super OUT, A, ? extends R> collector) {
+        Collection<OUT> terminated = terminate();
+        A accumulator = collector.supplier().get();
+        for (OUT out : terminated) {
+            collector.accumulator().accept(accumulator, out);
+        }
+        return collector.finisher().apply(accumulator);
+    }
+
+
+    private Collection<OUT> terminate() {
+        Head<IN> head = getHead();
+        Spliterator<IN> spliterator = head.getSpliterator();
+
+        List<OUT> list = new ArrayList<>(Math.toIntExact(spliterator.getExactSizeIfKnown()));
+        Pipeline<OUT, OUT> collect = new Pipeline<OUT, OUT>(this) {
+            @Override
+            void apply(OUT in) {
+                list.add(in);
+            }
+        };
+        setDownstream(collect);
+        spliterator.forEachRemaining(head::apply);
+        return list;
+    }
+
+
+    /**
+     * Previous sequential implementation
+     * @param action
+     */
+    public void forEachSeq(Consumer<? super OUT> action) {
         Pipeline<OUT, OUT> forEach = new Pipeline<OUT, OUT>(this) {
             @Override
             void apply(OUT in) {
@@ -72,11 +115,10 @@ abstract class Pipeline<IN, OUT> implements Stream<OUT> {
             }
         };
         setDownstream(forEach);
-        terminate();
+        terminateSeq();
     }
 
-    @Override
-    public <R, A> R collect(Collector<? super OUT,  A, ? extends R> collector) {
+    public <R, A> R collectSeq(Collector<? super OUT,  A, ? extends R> collector) {
         A accumulator = collector.supplier().get();
         final BiConsumer<A, ? super OUT> accumulatorFunc = collector.accumulator();
         Pipeline<OUT, OUT> collect = new Pipeline<OUT, OUT>(this) {
@@ -86,12 +128,11 @@ abstract class Pipeline<IN, OUT> implements Stream<OUT> {
             }
         };
         setDownstream(collect);
-        terminate();
+        terminateSeq();
         return collector.finisher().apply(accumulator);
     }
 
-
-    private void terminate() {
+    private void terminateSeq() {
         Head<IN> head = getHead();
         head.getSpliterator().forEachRemaining(head::apply);
     }

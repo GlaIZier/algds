@@ -1,12 +1,12 @@
 package ru.glaizier.algds.alg.stream.pipeline;
 
-import java.util.Arrays;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collector;
 
 import ru.glaizier.algds.alg.stream.Stream;
-import ru.glaizier.algds.alg.stream.StreamFactory;
 
 abstract class Pipeline<IN, OUT> implements Stream<OUT> {
 
@@ -72,15 +72,28 @@ abstract class Pipeline<IN, OUT> implements Stream<OUT> {
             }
         };
         setDownstream(forEach);
+        terminate();
+    }
 
+    @Override
+    public <R, A> R collect(Collector<? super OUT,  A, ? extends R> collector) {
+        A accumulator = collector.supplier().get();
+        final BiConsumer<A, ? super OUT> accumulatorFunc = collector.accumulator();
+        Pipeline<OUT, OUT> collect = new Pipeline<OUT, OUT>(this) {
+            @Override
+            void apply(OUT in) {
+                accumulatorFunc.accept(accumulator, in);
+            }
+        };
+        setDownstream(collect);
+        terminate();
+        return collector.finisher().apply(accumulator);
+    }
+
+
+    private void terminate() {
         Head<IN> head = getHead();
         head.getSpliterator().forEachRemaining(head::apply);
     }
 
-    public static void main(String[] args) {
-        StreamFactory.of(Arrays.asList(1, 2, 3, 4, 5, 6, 7))
-            .filter(i -> i >= 3)
-            .map(i -> i * -1)
-            .forEach(System.out::println);
-    }
 }

@@ -66,8 +66,6 @@ public class StreamFunctionalTest {
             .map(i -> i * -1)
             .collect(toList());
 
-        collected.forEach(System.out::println);
-
-//        assertThat(collected, Matchers.containsInAnyOrder(-3, -4, -5, -6, -7));
+        assertThat(collected, Matchers.containsInAnyOrder(-3, -4, -5, -6, -7));
     }
 }

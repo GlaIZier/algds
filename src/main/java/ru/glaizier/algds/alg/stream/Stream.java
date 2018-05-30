@@ -7,6 +7,9 @@ import java.util.stream.Collector;
 
 public interface Stream<T> {
 
+    /**
+     * Doesn't guarantee the order
+     */
     Stream<T> parallel();
 
     Stream<T> filter(Predicate<? super T> predicate);

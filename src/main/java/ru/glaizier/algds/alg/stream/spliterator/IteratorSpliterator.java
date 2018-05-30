@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 
 public class IteratorSpliterator<T> implements Spliterator<T> {
 
-    private static final int BATCH_SIZE = 2;
+    private static final int DEFAULT_BATCH_SIZE = 1 << 13;
 
     private static final int SPLIT_COEFFICIENT = 2;
 
@@ -20,16 +20,23 @@ public class IteratorSpliterator<T> implements Spliterator<T> {
 
     private final int characteristics;
 
+    private final int batchSize;
+
     private long estimateSize;
 
-    public IteratorSpliterator(Collection<T> collection, int characteristics) {
+    public IteratorSpliterator(Collection<T> collection, int characteristics, int batchSize) {
         Objects.requireNonNull(collection);
         this.collection = collection;
         this.iterator = collection.iterator();
         this.estimateSize = (long) collection.size();
         this.characteristics = (characteristics & Spliterator.CONCURRENT) == 0
-                ? characteristics | Spliterator.SIZED | Spliterator.SUBSIZED
-                : characteristics;
+            ? characteristics | Spliterator.SIZED | Spliterator.SUBSIZED
+            : characteristics;
+        this.batchSize = batchSize;
+    }
+
+    public IteratorSpliterator(Collection<T> collection, int characteristics) {
+        this(collection, characteristics, DEFAULT_BATCH_SIZE);
     }
 
     @Override
@@ -48,11 +55,11 @@ public class IteratorSpliterator<T> implements Spliterator<T> {
         iterator.forEachRemaining(action);
     }
 
-    // Awful implementation. We could use here array implementation with fence to avoid copying, but this is used just
-    // for this pet project and not fussed about the effectiveness
+    // Awful implementation. We could use here an array implementation with a fence to avoid copying, but this is used just
+    // for this pet project and is not fussed about the effectiveness
     @Override
     public Spliterator<T> trySplit() {
-        if (estimateSize <= BATCH_SIZE)
+        if (estimateSize <= batchSize)
             return null;
         long newSpliteratorSize = estimateSize / SPLIT_COEFFICIENT;
         List<T> list = new ArrayList<>(Math.toIntExact(newSpliteratorSize));

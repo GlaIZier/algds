@@ -28,9 +28,11 @@ public class StreamRecursiveAction<IN> extends RecursiveAction {
 
         StreamRecursiveAction<IN> left = new StreamRecursiveAction<>(fork, headAction);
         left.fork();
-        StreamRecursiveAction<IN> right = new StreamRecursiveAction<>(spliterator, headAction);
-        right.compute();
-        left.join();
+//        StreamRecursiveAction<IN> right = new StreamRecursiveAction<>(spliterator, headAction);
+//        right.compute();
+//        left.join();
+        // don't know why this is faster and less memory consuming than the code above
+        this.compute();
     }
 
     private void computeSequentially() {

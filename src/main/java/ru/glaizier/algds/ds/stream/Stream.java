@@ -1,4 +1,4 @@
-package ru.glaizier.algds.alg.stream;
+package ru.glaizier.algds.ds.stream;
 
 import java.util.function.Consumer;
 import java.util.function.Function;

@@ -1,9 +1,9 @@
-package ru.glaizier.algds.alg.stream;
+package ru.glaizier.algds.ds.stream;
 
 import java.util.Collection;
 
-import ru.glaizier.algds.alg.stream.pipeline.Head;
-import ru.glaizier.algds.alg.stream.spliterator.IteratorSpliterator;
+import ru.glaizier.algds.ds.stream.pipeline.Head;
+import ru.glaizier.algds.ds.stream.spliterator.IteratorSpliterator;
 
 public class StreamFactory {
 

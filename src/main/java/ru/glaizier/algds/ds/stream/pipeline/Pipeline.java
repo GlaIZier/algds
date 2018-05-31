@@ -1,4 +1,4 @@
-package ru.glaizier.algds.alg.stream.pipeline;
+package ru.glaizier.algds.ds.stream.pipeline;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,7 +12,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collector;
 
-import ru.glaizier.algds.alg.stream.Stream;
+import ru.glaizier.algds.ds.stream.Stream;
 
 abstract class Pipeline<IN, OUT> implements Stream<OUT> {
 

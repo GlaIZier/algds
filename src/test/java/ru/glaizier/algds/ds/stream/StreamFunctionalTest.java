@@ -1,4 +1,4 @@
-package ru.glaizier.algds.alg.stream;
+package ru.glaizier.algds.ds.stream;
 
 import static java.util.stream.Collectors.toList;
 import java.io.ByteArrayOutputStream;

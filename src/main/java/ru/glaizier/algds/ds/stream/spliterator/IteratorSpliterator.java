@@ -1,4 +1,4 @@
-package ru.glaizier.algds.alg.stream.spliterator;
+package ru.glaizier.algds.ds.stream.spliterator;
 
 import java.util.ArrayList;
 import java.util.Collection;

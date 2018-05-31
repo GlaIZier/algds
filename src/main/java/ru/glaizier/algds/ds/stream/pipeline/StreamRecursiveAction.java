@@ -1,4 +1,4 @@
-package ru.glaizier.algds.alg.stream.pipeline;
+package ru.glaizier.algds.ds.stream.pipeline;
 
 import java.util.Spliterator;
 import java.util.concurrent.RecursiveAction;

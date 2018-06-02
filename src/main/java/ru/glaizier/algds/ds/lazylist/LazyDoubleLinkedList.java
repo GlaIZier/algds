@@ -49,12 +49,4 @@ public class LazyDoubleLinkedList<T> extends LazyList<T> {
         }
     }
 
-
-    public static void main(String[] args) {
-        Factory<Integer> factory = new Factory<>(i -> i + 1);
-
-        System.out.println(factory.from(0).getValue());
-        System.out.println(factory.from(0).next().next().getValue());
-        System.out.println(factory.from(0).next().next().getPrev().getValue());
-    }
 }

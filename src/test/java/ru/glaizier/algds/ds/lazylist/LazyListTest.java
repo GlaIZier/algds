@@ -5,17 +5,15 @@ import org.junit.Test;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
-/**
- * @author GlaIZier
- */
-public class LazyDoubleLinkedListTest {
+public class LazyListTest {
 
     @Test
-    public void nextPrev() {
-        LazyDoubleLinkedList.Factory<Integer> factory = new LazyDoubleLinkedList.Factory<>(i -> i + 1);
+    public void nextValue() {
+        LazyList.Factory<Integer> factory = new LazyList.Factory<>(i -> i + 1);
+
         assertThat(factory.from(0).getValue(), is(0));
         assertThat(factory.from(0).next().next().getValue(), is(2));
-        assertThat(factory.from(0).next().next().getPrev().getValue(), is(1));
+        assertThat(factory.from(0).next().next().next().getValue(), is(3));
     }
 
 }

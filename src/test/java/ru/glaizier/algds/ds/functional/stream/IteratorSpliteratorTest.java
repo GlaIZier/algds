@@ -1,4 +1,4 @@
-package ru.glaizier.algds.ds.stream;
+package ru.glaizier.algds.ds.functional.stream;
 
 import static java.util.stream.Collectors.toList;
 import java.util.ArrayList;
@@ -10,7 +10,7 @@ import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 import org.junit.Test;
 
-import ru.glaizier.algds.ds.stream.spliterator.IteratorSpliterator;
+import ru.glaizier.algds.ds.functional.stream.spliterator.IteratorSpliterator;
 
 /**
  * @author GlaIZier

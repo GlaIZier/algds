@@ -1,4 +1,4 @@
-package ru.glaizier.algds.ds.lazylist;
+package ru.glaizier.algds.ds.functional.lazylist;
 
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;

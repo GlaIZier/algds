@@ -1,6 +1,7 @@
-package ru.glaizier.algds.ds.lazylist;
+package ru.glaizier.algds.ds.functional.lazylist;
 
 import org.junit.Test;
+import ru.glaizier.algds.ds.functional.lazylist.LazyDoubleLinkedList;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;

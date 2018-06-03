@@ -1,8 +1,8 @@
-package ru.glaizier.algds.ds.stream.pipeline;
+package ru.glaizier.algds.ds.functional.stream.pipeline;
 
 import java.util.Spliterator;
 
-import ru.glaizier.algds.ds.stream.Stream;
+import ru.glaizier.algds.ds.functional.stream.Stream;
 
 /**
  * @author GlaIZier

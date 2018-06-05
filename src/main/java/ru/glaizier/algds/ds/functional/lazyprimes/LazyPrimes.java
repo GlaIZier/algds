@@ -7,14 +7,15 @@ import ru.glaizier.algds.ds.functional.lazylist.LazyList;
  */
 public class LazyPrimes {
 
-    public static LazyList<Integer> primes(LazyList<Integer> from) {
+    public static LazyList<Integer> introducePrimeSeq(LazyList<Integer> from) {
         if (from.getValue() <= 1) {
             throw new IllegalArgumentException("From value has to be more than 1");
         }
 
         return new LazyList<>(
             from.getValue(),
-            () -> primes(from.filter(n -> n % from.getValue() != 0))
+            // this recursive call adds one more filter for the next element to check if it can be divided by the current number without remainder
+            () -> introducePrimeSeq(from.filter(n -> n % from.getValue() != 0))
         );
     }
 
@@ -22,7 +23,7 @@ public class LazyPrimes {
         try {
             LazyList.Factory<Integer> sequentialIntegers = new LazyList.Factory<>(i -> i + 1);
             LazyList<Integer> seed = sequentialIntegers.from(2);
-            printAll(primes(seed));
+            printAll(introducePrimeSeq(seed));
         } catch (StackOverflowError e) {
             System.out.println("Stack overflowed. Exiting...");
         }
@@ -33,14 +34,4 @@ public class LazyPrimes {
             printAll(from.next());
     }
 
-    public static void main(String[] args) {
-//        LazyList.Factory<Integer> sequentialIntegers = new LazyList.Factory<>(i -> i + 1);
-//        LazyList<Integer> seed = sequentialIntegers.from(2);
-//        System.out.println(primes(seed).getValue());
-//        System.out.println(primes(seed).next().getValue());
-//        System.out.println(primes(seed).next().next().getValue());
-//        System.out.println(primes(seed).next().next().next().getValue());
-//        System.out.println(primes(seed).next().next().next().next().getValue());
-        printAll();
-    }
 }

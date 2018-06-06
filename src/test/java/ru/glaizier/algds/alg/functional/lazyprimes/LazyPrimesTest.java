@@ -1,4 +1,4 @@
-package ru.glaizier.algds.ds.functional.lazyprimes;
+package ru.glaizier.algds.alg.functional.lazyprimes;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;

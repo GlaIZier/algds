@@ -15,7 +15,7 @@ import java.util.stream.Stream;
  */
 public class StreamForkConsumer<T> implements ForkResult, Consumer<T> {
 
-    private Map<Object, List<T>> elements = new HashMap<>();
+    private List<T> elements = new ArrayList<>();
 
     private Map<Object, Function<Stream<T>, ?>> operations = new HashMap<>();
 
@@ -23,22 +23,20 @@ public class StreamForkConsumer<T> implements ForkResult, Consumer<T> {
     private Map<Object, Future<?>> results = new HashMap<>();
 
     public StreamForkConsumer(Stream<T> stream, Map<Object, Function<Stream<T>, ?>> operations) {
-        stream.sequential().forEach(this);
         this.operations = operations;
-        operations.keySet().forEach(o -> elements.put(o, new ArrayList<>()));
+        stream.sequential().forEach(this);
         finish();
     }
 
     @Override
     public void accept(T t) {
-        elements.values().forEach(list -> list.add(t));
+        elements.add(t);
     }
 
     private void finish() {
         operations.forEach((o, streamFunction) -> {
-            List<T> stream = elements.get(o);
             Function<Stream<T>, ?> operation = operations.get(o);
-            CompletableFuture<?> result = CompletableFuture.supplyAsync(() -> operation.apply(stream.stream()));
+            CompletableFuture<?> result = CompletableFuture.supplyAsync(() -> operation.apply(elements.stream()));
             results.put(o, result);
         });
     }

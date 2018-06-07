@@ -13,20 +13,20 @@ public class StreamForker<T> {
 
     private final Stream<T> stream;
 
-    private final Map<String, Function<Stream<T>, ?>> operations = new HashMap<>();
+    private final Map<Object, Function<Stream<T>, ?>> operations = new HashMap<>();
 
     public StreamForker(Stream<T> stream) {
         this.stream = stream;
     }
 
-    public StreamForker<T> fork(String key, Function<Stream<T>, ?> operation) {
+    public StreamForker<T> fork(Object key, Function<Stream<T>, ?> operation) {
         Objects.requireNonNull(key);
         Objects.requireNonNull(operation);
         operations.put(key, operation);
         return this;
     }
 
-    public ForkResult getResult(String key) {
-        return null;
+    public ForkResult getResult() {
+        return new StreamForkConsumer<>(stream, operations);
     }
 }

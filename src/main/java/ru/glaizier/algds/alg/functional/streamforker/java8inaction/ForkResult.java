@@ -1,4 +1,4 @@
-package ru.glaizier.algds.alg.functional.streamforker;
+package ru.glaizier.algds.alg.functional.streamforker.java8inaction;
 
 /**
  * @author GlaIZier

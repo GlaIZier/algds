@@ -9,6 +9,9 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import org.junit.Test;
 
+import ru.glaizier.algds.alg.functional.streamforker.simple.SimpleForkResult;
+import ru.glaizier.algds.alg.functional.streamforker.simple.SimpleStreamForker;
+
 /**
  * @author GlaIZier
  */
@@ -16,8 +19,8 @@ public class StreamForkerTest {
 
 
     @Test
-    public void executeOperations() {
-        ForkResult result = new StreamForker<>(Dish.buildSimpleStream())
+    public void simpleExecuteOperations() {
+        SimpleForkResult result = new SimpleStreamForker<>(Dish.buildSimpleStream())
             .fork("shortMenu", s -> s.map(Dish::getName)
                 .collect(joining(", ")))
             .fork("totalCalories", s -> s.mapToInt(Dish::getCalories).sum())

@@ -1,4 +1,4 @@
-package ru.glaizier.algds.alg.functional.streamforker;
+package ru.glaizier.algds.alg.functional.streamforker.simple;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,16 +13,15 @@ import java.util.stream.Stream;
 /**
  * @author GlaIZier
  */
-public class StreamForkConsumer<T> implements ForkResult, Consumer<T> {
+public class SimpleStreamForkConsumer<T> implements SimpleForkResult, Consumer<T> {
 
     private List<T> elements = new ArrayList<>();
 
     private Map<Object, Function<Stream<T>, ?>> operations = new HashMap<>();
 
-    // Concurrent HashMap?
     private Map<Object, Future<?>> results = new HashMap<>();
 
-    public StreamForkConsumer(Stream<T> stream, Map<Object, Function<Stream<T>, ?>> operations) {
+    public SimpleStreamForkConsumer(Stream<T> stream, Map<Object, Function<Stream<T>, ?>> operations) {
         this.operations = operations;
         stream.sequential().forEach(this);
         finish();

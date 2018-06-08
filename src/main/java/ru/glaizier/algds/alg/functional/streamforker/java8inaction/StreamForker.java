@@ -1,4 +1,4 @@
-package ru.glaizier.algds.alg.functional.streamforker;
+package ru.glaizier.algds.alg.functional.streamforker.java8inaction;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,6 +27,12 @@ public class StreamForker<T> {
     }
 
     public ForkResult getResult() {
-        return new StreamForkConsumer<>(stream, operations);
+        StreamForkConsumer<T> consumer = new StreamForkConsumer<>(operations);
+        try {
+            stream.sequential().forEach(consumer);
+        } finally {
+            consumer.finish();
+        }
+        return consumer;
     }
 }

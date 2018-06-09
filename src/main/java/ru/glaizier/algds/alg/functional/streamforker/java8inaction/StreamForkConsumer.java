@@ -14,6 +14,8 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import ru.glaizier.algds.alg.functional.streamforker.ForkResult;
+
 /**
  * @author GlaIZier
  */

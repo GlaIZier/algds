@@ -10,10 +10,12 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import ru.glaizier.algds.alg.functional.streamforker.ForkResult;
+
 /**
  * @author GlaIZier
  */
-public class SimpleStreamForkConsumer<T> implements SimpleForkResult, Consumer<T> {
+public class SimpleStreamForkConsumer<T> implements ForkResult, Consumer<T> {
 
     private List<T> elements = new ArrayList<>();
 

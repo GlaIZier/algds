@@ -9,7 +9,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import org.junit.Test;
 
-import ru.glaizier.algds.alg.functional.streamforker.simple.SimpleForkResult;
+import ru.glaizier.algds.alg.functional.streamforker.java8inaction.StreamForker;
 import ru.glaizier.algds.alg.functional.streamforker.simple.SimpleStreamForker;
 
 /**
@@ -17,12 +17,19 @@ import ru.glaizier.algds.alg.functional.streamforker.simple.SimpleStreamForker;
  */
 public class StreamForkerTest {
 
-
     @Test
     public void simpleExecuteOperations() {
-        SimpleForkResult result = new SimpleStreamForker<>(Dish.buildSimpleStream())
-            .fork("shortMenu", s -> s.map(Dish::getName)
-                .collect(joining(", ")))
+        testForker(new SimpleStreamForker<>(Dish.buildSimpleStream()));
+    }
+
+    @Test
+    public void java8InActionExecuteOperations() {
+        testForker(new StreamForker<>(Dish.buildSimpleStream()));
+    }
+
+    private void testForker(Forker<? extends Dish> forker) {
+        ForkResult result = forker
+            .fork("shortMenu", s -> s.map(Dish::getName).collect(joining(", ")))
             .fork("totalCalories", s -> s.mapToInt(Dish::getCalories).sum())
             .fork("mostCaloricDishName", s -> s.reduce((d1, d2) -> d1.getCalories() > d2.getCalories() ? d1 : d2)
                 .get().getName())

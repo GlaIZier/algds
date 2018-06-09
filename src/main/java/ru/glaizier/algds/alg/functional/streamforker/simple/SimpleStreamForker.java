@@ -6,10 +6,13 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import ru.glaizier.algds.alg.functional.streamforker.ForkResult;
+import ru.glaizier.algds.alg.functional.streamforker.Forker;
+
 /**
  * @author GlaIZier
  */
-public class SimpleStreamForker<T> {
+public class SimpleStreamForker<T> implements Forker<T> {
 
     private final Stream<T> stream;
 
@@ -26,7 +29,7 @@ public class SimpleStreamForker<T> {
         return this;
     }
 
-    public SimpleForkResult getResult() {
+    public ForkResult getResult() {
         return new SimpleStreamForkConsumer<>(stream, operations);
     }
 }

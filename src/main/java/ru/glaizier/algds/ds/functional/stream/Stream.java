@@ -8,7 +8,7 @@ import java.util.stream.Collector;
 public interface Stream<T> {
 
     /**
-     * Doesn't guarantee the order
+     * Doesn't guarantee order
      */
     Stream<T> parallel();
 

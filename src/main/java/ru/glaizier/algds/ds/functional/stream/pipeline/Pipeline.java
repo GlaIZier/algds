@@ -125,7 +125,7 @@ abstract class Pipeline<IN, OUT> implements Stream<OUT> {
             }
         };
         setDownstream(collect);
-        new ForkJoinPool().invoke(new StreamRecursiveAction<>(spliterator, head::apply));
+        ForkJoinPool.commonPool().invoke(new StreamRecursiveAction<>(spliterator, head::apply));
         return collection;
     }
 

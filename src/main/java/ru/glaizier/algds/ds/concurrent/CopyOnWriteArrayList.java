@@ -6,7 +6,7 @@ import java.util.function.Function;
 
 public class CopyOnWriteArrayList<T> {
 
-    private volatile ArrayList<T> array = new ArrayList<T>();
+    private volatile ArrayList<T> array = new ArrayList<>();
 
     private final AtomicLong version = new AtomicLong();
 
@@ -32,12 +32,18 @@ public class CopyOnWriteArrayList<T> {
         return compareAndSwapArray(array -> array.remove(index));
     }
 
-    public boolean remove(T elem) {
+    @SuppressWarnings("SuspiciousMethodCalls")
+    public boolean remove(Object elem) {
         return compareAndSwapArray(array -> array.remove(elem));
     }
 
     public T get(int index) {
         return array.get(index);
+    }
+
+    @SuppressWarnings("SuspiciousMethodCalls")
+    public boolean contains(Object elem) {
+        return array.contains(elem);
     }
 
     public int size() {
@@ -47,7 +53,7 @@ public class CopyOnWriteArrayList<T> {
     private <R> R compareAndSwapArray(Function<? super ArrayList<T>, ? extends R> arrayTransformer) {
         while (true) {
             long prevVersion = this.version.get();
-            long newVersion = prevVersion++;
+            long newVersion = prevVersion + 1;
 
             ArrayList<T> newArray = new ArrayList<>(array);
             R result = arrayTransformer.apply(newArray);

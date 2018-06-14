@@ -33,14 +33,14 @@ public class StreamPerformanceTest {
     }
 
     private void runSequentially(Collection<? extends Integer> collection) {
-        StreamFactory.of(collection)
+        Streams.of(collection)
             .filter(i -> i > 1 >> 10)
             .map(i -> i + 1)
             .collect(toList());
     }
 
     private void runParallel(Collection<? extends Integer> collection) {
-        StreamFactory.of(collection)
+        Streams.of(collection)
             .parallel()
             .filter(i -> i > 1 >> 10)
             .map(i -> i + 1)

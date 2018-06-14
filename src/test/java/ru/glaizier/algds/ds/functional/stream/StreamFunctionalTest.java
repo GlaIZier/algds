@@ -27,7 +27,7 @@ public class StreamFunctionalTest {
     public void filterMapForEach() {
         final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outContent));
-        StreamFactory.of(Arrays.asList(1, 2, 3, 4, 5, 6, 7))
+        Streams.of(Arrays.asList(1, 2, 3, 4, 5, 6, 7))
             .filter(i -> i >= 3)
             .map(i -> i * -1)
             .filter(i -> i == -7)
@@ -38,7 +38,7 @@ public class StreamFunctionalTest {
 
     @Test
     public void filterMapCollect() {
-        List<Integer> collected = StreamFactory.of(Arrays.asList(1, 2, 3, 4, 5, 6, 7))
+        List<Integer> collected = Streams.of(Arrays.asList(1, 2, 3, 4, 5, 6, 7))
             .filter(i -> i >= 3)
             .map(i -> i * -1)
             .collect(toList());
@@ -48,7 +48,7 @@ public class StreamFunctionalTest {
 
     @Test
     public void filterMapMapFilter() {
-        List<Integer> collected = StreamFactory.of(Arrays.asList(1, 2, 3, 4, 5, 6, 7))
+        List<Integer> collected = Streams.of(Arrays.asList(1, 2, 3, 4, 5, 6, 7))
             .filter(i -> i < 3)
             .map(i -> i * -1)
             .map(i -> i + 1)
@@ -60,7 +60,7 @@ public class StreamFunctionalTest {
 
     @Test
     public void parallelFilterMapCollect() {
-        List<Integer> collected = StreamFactory.of(Arrays.asList(1, 2, 3, 4, 5, 6, 7))
+        List<Integer> collected = Streams.of(Arrays.asList(1, 2, 3, 4, 5, 6, 7))
             .parallel()
             .filter(i -> i >= 3)
             .map(i -> i * -1)

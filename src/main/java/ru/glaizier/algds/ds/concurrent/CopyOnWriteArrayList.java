@@ -3,6 +3,7 @@ package ru.glaizier.algds.ds.concurrent;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 public class CopyOnWriteArrayList<T> {
 
@@ -11,30 +12,30 @@ public class CopyOnWriteArrayList<T> {
     private final AtomicLong version = new AtomicLong();
 
     public void add(T elem) {
-        compareAndSwapArray(array -> {
+        compareAndSwap(array -> {
             array.add(elem);
             return null;
         });
     }
 
     public void add(int index, T elem) {
-        compareAndSwapArray(array -> {
+        compareAndSwap(array -> {
             array.add(index, elem);
             return null;
         });
     }
 
     public T set(int index, T elem) {
-        return compareAndSwapArray(array -> array.set(index, elem));
+        return compareAndSwap(array -> array.set(index, elem));
     }
 
     public T remove(int index) {
-        return compareAndSwapArray(array -> array.remove(index));
+        return compareAndSwap(array -> array.remove(index));
     }
 
     @SuppressWarnings("SuspiciousMethodCalls")
     public boolean remove(Object elem) {
-        return compareAndSwapArray(array -> array.remove(elem));
+        return compareAndSwap(array -> array.remove(elem));
     }
 
     public T get(int index) {
@@ -50,7 +51,12 @@ public class CopyOnWriteArrayList<T> {
         return array.size();
     }
 
-    private <R> R compareAndSwapArray(Function<? super ArrayList<T>, ? extends R> arrayTransformer) {
+    // Todo test stream() separately
+    public Stream<T> stream() {
+        return array.stream();
+    }
+
+    private <R> R compareAndSwap(Function<? super ArrayList<T>, ? extends R> arrayTransformer) {
         while (true) {
             long prevVersion = this.version.get();
             long newVersion = prevVersion + 1;

@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import org.junit.After;
@@ -34,17 +35,46 @@ public class CopyOnWriteArrayListTest {
 
     // Todo check how to finish, check exception and how to check results
     @Test
-    public void addConcurrently() throws InterruptedException {
-        List<Callable<Object>> callables = IntStream.range(0, THREADS_NUMBER)
+    public void addSetRemoveConcurrently() throws InterruptedException {
+        // add
+        List<Callable<Object>> additionTasks = IntStream.range(0, THREADS_NUMBER)
             .mapToObj(i -> (Runnable) () -> array.add(i))
             .map(Executors::callable)
             .collect(toList());
 
-        executorService.invokeAll(callables);
+        executorService.invokeAll(additionTasks);
 
         assertThat(array.size(), is(THREADS_NUMBER));
         IntStream.range(0, THREADS_NUMBER)
             .forEach(i -> assertThat(array.contains(i), is(true)));
+        assertThat(array.get(0), greaterThanOrEqualTo(0));
+        List<Integer> addedElements = array.stream().collect(toList());
+
+        // set
+        List<Callable<Object>> setTasks = IntStream.range(0, THREADS_NUMBER)
+            .mapToObj(i -> (Runnable) () -> array.set(i, array.get(i) + 1))
+            .map(Executors::callable)
+            .collect(toList());
+
+        executorService.invokeAll(setTasks);
+
+        assertThat(array.size(), is(THREADS_NUMBER));
+        IntStream.rangeClosed(1, THREADS_NUMBER)
+            .forEach(i -> assertThat(array.contains(i), is(true)));
+        IntStream.range(0, THREADS_NUMBER)
+            .forEach(i -> assertThat(array.get(i), is(addedElements.get(i) + 1)));
+
+        //remove by Object as remove by index doesn't always lead to an empty list because of elements shift
+        List<Callable<Object>> removeTasks = IntStream.rangeClosed(1, THREADS_NUMBER)
+            .mapToObj(i -> (Runnable) () -> array.remove((Object) i))
+            .map(Executors::callable)
+            .collect(toList());
+
+        executorService.invokeAll(removeTasks);
+
+        assertThat(array.size(), is(0));
+        IntStream.rangeClosed(1, THREADS_NUMBER)
+            .forEach(i -> assertThat(array.contains(i), is(false)));
     }
 
 }

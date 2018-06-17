@@ -51,7 +51,7 @@ public class CopyOnWriteArrayList<T> {
         return array.size();
     }
 
-    // Todo test stream() separately
+    // stream() takes some current state
     public Stream<T> stream() {
         return array.stream();
     }

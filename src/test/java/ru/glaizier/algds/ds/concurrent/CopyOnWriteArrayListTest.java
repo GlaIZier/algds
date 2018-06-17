@@ -2,13 +2,17 @@ package ru.glaizier.algds.ds.concurrent;
 
 
 import static java.util.stream.Collectors.toList;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.isOneOf;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import org.junit.After;
@@ -75,6 +79,41 @@ public class CopyOnWriteArrayListTest {
         assertThat(array.size(), is(0));
         IntStream.rangeClosed(1, THREADS_NUMBER)
             .forEach(i -> assertThat(array.contains(i), is(false)));
+    }
+
+    @Test
+    public void stream() throws InterruptedException {
+        IntStream.range(0, THREADS_NUMBER).forEach(array::add);
+
+        List<Callable<Object>> tasks = new ArrayList<>(THREADS_NUMBER + 1);
+        // mutate tasks
+        List<Callable<Object>> setTasks = IntStream.range(0, THREADS_NUMBER)
+                .mapToObj(i -> (Runnable) () -> {
+                    Thread.yield();
+                    array.set(i, array.get(i) + THREADS_NUMBER);
+                })
+                .map(Executors::callable)
+                .collect(toList());
+
+        // numbers to check
+        List<Integer> numbersToCheck = new ArrayList<>(THREADS_NUMBER);
+        // stream read tasks
+        Callable<Object> streamTask = Executors.callable(() -> {
+            numbersToCheck.addAll(array.stream().collect(toList()));
+        });
+        tasks.addAll(setTasks);
+        // add this task somewhere in the middle of all tasks
+        tasks.add(THREADS_NUMBER / 2, streamTask);
+
+        executorService.invokeAll(tasks);
+
+        // check
+        assertThat(numbersToCheck.size(), is(THREADS_NUMBER));
+        // check that we have some
+        IntStream.range(0, THREADS_NUMBER)
+                .forEach(i -> {
+                    assertThat(numbersToCheck.get(i), isOneOf(i, i + THREADS_NUMBER));
+                });
     }
 
 }

@@ -2,10 +2,8 @@ package ru.glaizier.algds.ds.concurrent;
 
 
 import static java.util.stream.Collectors.toList;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,7 +35,6 @@ public class CopyOnWriteArrayListTest {
         executorService.shutdownNow();
     }
 
-    // Todo check how to finish, check exception and how to check results
     @Test
     public void addSetRemoveConcurrently() throws InterruptedException {
         // add
@@ -110,10 +107,7 @@ public class CopyOnWriteArrayListTest {
         // check
         assertThat(numbersToCheck.size(), is(THREADS_NUMBER));
         // check that we have some
-        IntStream.range(0, THREADS_NUMBER)
-                .forEach(i -> {
-                    assertThat(numbersToCheck.get(i), isOneOf(i, i + THREADS_NUMBER));
-                });
+        IntStream.range(0, THREADS_NUMBER).forEach(i -> assertThat(numbersToCheck.get(i), isOneOf(i, i + THREADS_NUMBER)));
     }
 
 }

@@ -2,12 +2,16 @@ package ru.glaizier.algds.ds.concurrent;
 
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+// Todo change it to AtomicReference?
 public class CopyOnWriteArrayList<T> {
 
     private volatile ArrayList<T> array = new ArrayList<>();
+
+    private AtomicReference<ArrayList<T>> a = new AtomicReference<>(array);
 
     private final AtomicLong version = new AtomicLong();
 

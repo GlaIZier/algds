@@ -4,6 +4,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import lombok.Value;
 
+// Todo remove or implement it
 public class CopyOnWriteBinaryTree<T extends Comparable> {
 
     private volatile Node<T> root;

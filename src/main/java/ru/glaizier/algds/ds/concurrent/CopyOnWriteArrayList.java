@@ -1,31 +1,25 @@
 package ru.glaizier.algds.ds.concurrent;
 
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-// Todo change it to AtomicReference?
 public class CopyOnWriteArrayList<T> {
 
-    private volatile ArrayList<T> array = new ArrayList<>();
-
-    private AtomicReference<ArrayList<T>> a = new AtomicReference<>(array);
-
-    private final AtomicLong version = new AtomicLong();
+    private AtomicReference<ArrayList<T>> array = new AtomicReference<>(new ArrayList<>());
 
     public void add(T elem) {
-        compareAndSwap(array -> {
+        array.getAndUpdate(array -> {
             array.add(elem);
-            return null;
+            return array;
         });
     }
 
     public void add(int index, T elem) {
-        compareAndSwap(array -> {
+        array.getAndUpdate(array -> {
             array.add(index, elem);
-            return null;
+            return array;
         });
     }
 
@@ -43,35 +37,33 @@ public class CopyOnWriteArrayList<T> {
     }
 
     public T get(int index) {
-        return array.get(index);
+        return array.get().get(index);
     }
 
     @SuppressWarnings("SuspiciousMethodCalls")
     public boolean contains(Object elem) {
-        return array.contains(elem);
+        return array.get().contains(elem);
     }
 
     public int size() {
-        return array.size();
+        return array.get().size();
     }
 
     // stream() takes some current state
     public Stream<T> stream() {
-        return array.stream();
+        return array.get().stream();
     }
 
+    // We can do it with getAndUpdate() but this is for better understanding how it works
     private <R> R compareAndSwap(Function<? super ArrayList<T>, ? extends R> arrayTransformer) {
         while (true) {
-            long prevVersion = this.version.get();
-            long newVersion = prevVersion + 1;
+            ArrayList<T> prevArray = this.array.get();
 
-            ArrayList<T> newArray = new ArrayList<>(array);
+            ArrayList<T> newArray = new ArrayList<>(this.array.get());
             R result = arrayTransformer.apply(newArray);
 
-            if (version.compareAndSet(prevVersion, newVersion)) {
-                array = newArray;
+            if (array.compareAndSet(prevArray, newArray))
                 return result;
-            }
         }
     }
 

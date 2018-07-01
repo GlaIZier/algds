@@ -14,4 +14,12 @@ public class ImmutableLinkedList<T> {
         Node<T> next;
     }
 
+    private Node<T> find(T value) {
+        Node<T> cur = head.get();
+        while (cur != null && !value.equals(cur)) {
+            cur = cur.getNext();
+        }
+        return cur;
+    }
+
 }

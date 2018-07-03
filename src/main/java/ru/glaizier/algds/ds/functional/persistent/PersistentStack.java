@@ -2,6 +2,7 @@ package ru.glaizier.algds.ds.functional.persistent;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -23,14 +24,23 @@ public class PersistentStack<T> {
         if (value == null)
             throw new IllegalArgumentException();
 
-        head.getAndSet(new Node<>(value, head.get()));
+        head.getAndUpdate(prevHead -> new Node<>(value, prevHead));
+    }
+
+
+    /**
+     * @param value
+     * @param index if index is greater than the number of elements, than it will be put the last
+     */
+    public void put(T value, int index) {
+
     }
 
     public Optional<T> pop() {
         if (head.get() == fenceNode)
             return empty();
 
-        return of(head.getAndSet(head.get().getNext()).getValue());
+        return of(head.getAndUpdate(Node::getNext).getValue());
     }
 
     public Optional<T> peek() {
@@ -40,7 +50,31 @@ public class PersistentStack<T> {
         return of(head.get().getValue());
     }
 
+    public Optional<T> get(T value) {
+        Node<T> cur = head.get();
+        while (cur != fenceNode && !value.equals(cur)) {
+            cur = cur.getNext();
+        }
+        return ofNullable(cur.getValue());
+    }
 
+    public Optional<T> get(int index) {
+        if (index < 0)
+            throw new IllegalArgumentException();
+//        int i = 0;
+//        while (cur != fenceNode) {
+//            if (i == index)
+//                return of(cur.getValue());
+//            cur = cur.getNext();
+//            i++;
+//        }
+        Node<T> cur = head.get();
+        for(int i = 0; i <= index && cur != fenceNode; i++, cur = cur.getNext()) {
+            if (i == index)
+                return of(cur.getValue());
+        }
+        return empty();
+    }
 
     private Node<T> getAndSet(Node<T> newHead) {
         while (true) {

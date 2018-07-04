@@ -6,7 +6,8 @@ import static java.util.Optional.ofNullable;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
-import lombok.Value;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 public class PersistentStack<T> {
 
@@ -14,10 +15,11 @@ public class PersistentStack<T> {
 
     private AtomicReference<Node<T>> head = new AtomicReference<>(fenceNode);
 
-    @Value
+    @Data
+    @AllArgsConstructor
     private static class Node<T> {
-        T value;
-        Node<T> next;
+        private final T value;
+        private Node<T> next;
     }
 
     public void push(T value) {
@@ -33,7 +35,28 @@ public class PersistentStack<T> {
      * @param index if index is greater than the number of elements, than it will be put the last
      */
     public void put(T value, int index) {
+        if (index < 0 || value == null) {
+            throw new IllegalArgumentException();
+        } else if (index == 0) {
+            push(value);
+        }
 
+        head.getAndUpdate(prevHead -> {
+            // create a brand new list before index
+            Node<T> curPrev = prevHead;
+            // create a new head
+            Node<T> newHead = new Node<>(curPrev.getValue(), curPrev.getNext());
+            Node<T> curNew = newHead.getNext();
+
+            int i = 1;
+            while (i <= index && curPrev != fenceNode) {
+                if (i == index) {
+                    new Node(value, curNew.getNext());
+                }
+            }
+
+            return newHead;
+        });
     }
 
     public Optional<T> pop() {

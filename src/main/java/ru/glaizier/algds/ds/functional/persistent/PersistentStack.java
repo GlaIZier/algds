@@ -11,6 +11,7 @@ import lombok.Data;
 
 public class PersistentStack<T> {
 
+    // Todo make it static?
     private final Node<T> fenceNode = new Node<>(null, null);
 
     private AtomicReference<Node<T>> head = new AtomicReference<>(fenceNode);
@@ -43,16 +44,33 @@ public class PersistentStack<T> {
 
         head.getAndUpdate(prevHead -> {
             // create a brand new list before index
-            Node<T> curPrev = prevHead;
+            Node<T> curPrev = prevHead.getNext();
             // create a new head
-            Node<T> newHead = new Node<>(curPrev.getValue(), curPrev.getNext());
-            Node<T> curNew = newHead.getNext();
+            Node<T> newHead = new Node<>(prevHead.getValue(), prevHead.getNext());
+            Node<T> curNew = newHead;
 
+            // copying loop
             int i = 1;
-            while (i <= index && curPrev != fenceNode) {
-                if (i == index) {
-                    new Node(value, curNew.getNext());
-                }
+            for (; i < index && curPrev != fenceNode; curNew = curNew.getNext(), curPrev = curPrev.getNext(), i++) {
+                Node<T> copyNode = new Node<>(curPrev.getValue(), curPrev.getNext());
+                curNew.setNext(copyNode);
+            }
+//            while (i < index && curPrev != fenceNode) {
+//                Node<T> copyNode = new Node<>(curPrev.getValue(), curPrev.getNext());
+//                curNew.setNext(copyNode);
+//
+//                curNew = curNew.getNext();
+//                curPrev = curPrev.getNext();
+//                i++;
+//            }
+
+            // put a new node
+            // Todo remove this else after testing
+            if (i == index || curPrev == fenceNode) {
+                Node<T> putNode = new Node<>(value, curNew.getNext());
+                curNew.setNext(putNode);
+            } else {
+                throw new IllegalStateException("This is never should happen!");
             }
 
             return newHead;

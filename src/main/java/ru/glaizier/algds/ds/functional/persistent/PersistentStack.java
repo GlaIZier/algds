@@ -70,7 +70,7 @@ public class PersistentStack<T> {
                 Node<T> putNode = new Node<>(value, curNew.getNext());
                 curNew.setNext(putNode);
             } else {
-                throw new IllegalStateException("This is never should happen!");
+                throw new IllegalStateException("This never should happen!");
             }
 
             return newHead;
@@ -115,22 +115,6 @@ public class PersistentStack<T> {
                 return of(cur.getValue());
         }
         return empty();
-    }
-
-    private Node<T> getAndSet(Node<T> newHead) {
-        while (true) {
-            Node<T> prev = head.get();
-            if (head.compareAndSet(prev, newHead))
-                return prev;
-        }
-    }
-
-    private Node<T> find(T value) {
-        Node<T> cur = head.get();
-        while (cur != null && !value.equals(cur)) {
-            cur = cur.getNext();
-        }
-        return cur;
     }
 
 }

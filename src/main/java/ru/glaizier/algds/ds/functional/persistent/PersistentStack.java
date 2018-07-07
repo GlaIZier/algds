@@ -5,6 +5,7 @@ import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -115,6 +116,11 @@ public class PersistentStack<T> {
                 return of(cur.getValue());
         }
         return empty();
+    }
+
+    public void forEach(Consumer<? super T> action) {
+        for(Node<T> cur = head.get(); cur != fenceNode; cur = cur.getNext())
+            action.accept(cur.getValue());
     }
 
 }

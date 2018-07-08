@@ -94,7 +94,7 @@ public class PersistentStack<T> {
 
     public Optional<T> get(T value) {
         Node<T> cur = head.get();
-        while (cur != fenceNode && !value.equals(cur)) {
+        while (cur != fenceNode && !value.equals(cur.getValue())) {
             cur = cur.getNext();
         }
         return ofNullable(cur.getValue());

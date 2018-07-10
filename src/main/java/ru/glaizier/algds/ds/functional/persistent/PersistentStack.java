@@ -39,8 +39,9 @@ public class PersistentStack<T> {
     public void put(T value, int index) {
         if (index < 0 || value == null) {
             throw new IllegalArgumentException();
-        } else if (index == 0) {
+        } else if (index == 0 || head.get() == fenceNode) {
             push(value);
+            return;
         }
 
         head.getAndUpdate(prevHead -> {

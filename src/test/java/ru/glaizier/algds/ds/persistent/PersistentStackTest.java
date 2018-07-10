@@ -182,14 +182,14 @@ public class PersistentStackTest {
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
+                System.out.println(i);
                 stack.put(i, i);
             })
             .map(Executors::callable)
             .collect(toList());
 
         executorService.invokeAll(pushTasks);
-        stack.forEach(System.out::print);
-
+        stack.forEach(i -> System.out.print(i + "->"));
     }
 
 }

@@ -21,6 +21,7 @@ public class PersistentStack<T> {
     @AllArgsConstructor
     private static class Node<T> {
         private final T value;
+        // Todo make it immutable?
         private Node<T> next;
     }
 

@@ -43,30 +43,9 @@ public class PersistentStackTest {
 
     @Test
     public void push() throws InterruptedException {
-        List<Callable<Object>> pushTasks = IntStream.range(0, THREADS_NUMBER)
-                .mapToObj(i -> (Runnable) () -> {
-                    Thread.yield();
-                    try {
-                        Thread.sleep((long) (Math.random() * 100));
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    stack.push(i);
-                })
-                .map(Executors::callable)
-                .collect(toList());
-
+        List<Callable<Object>> pushTasks = buildPushTasks();
         executorService.invokeAll(pushTasks);
-
-        HashSet<Integer> checked = new HashSet<>();
-        IntStream.range(0, THREADS_NUMBER)
-                .forEach(i -> {
-                    Integer pop = stack.pop().get();
-                    assertThat(pop, greaterThanOrEqualTo(0));
-                    assertThat(pop, lessThan(THREADS_NUMBER));
-                    assertThat(checked.contains(pop), is(false));
-                    checked.add(pop);
-                });
+        checkAddition(stack);
     }
 
     @Test
@@ -145,34 +124,12 @@ public class PersistentStackTest {
 
     @Test
     public void getByValue() throws InterruptedException {
-        List<Callable<Object>> pushTasks = IntStream.range(0, THREADS_NUMBER)
-                .mapToObj(i -> (Runnable) () -> {
-                    Thread.yield();
-                    try {
-                        Thread.sleep((long) (Math.random() * 100));
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    stack.push(i);
-                })
-                .map(Executors::callable)
-                .collect(toList());
-
+        List<Callable<Object>> pushTasks = buildPushTasks();
         executorService.invokeAll(pushTasks);
-
-        HashSet<Integer> checked = new HashSet<>();
-        IntStream.range(0, THREADS_NUMBER)
-                .forEach(i -> {
-                    Integer get = stack.get((Integer) i).get();
-                    assertThat(get, greaterThanOrEqualTo(0));
-                    assertThat(get, lessThan(THREADS_NUMBER));
-                    assertThat(checked.contains(get), is(false));
-                    checked.add(get);
-                });
+        checkAddition(stack);
     }
 
     @Test
-    // Todo check NPE here
     public void put() throws InterruptedException {
         List<Callable<Object>> pushTasks = IntStream.range(0, THREADS_NUMBER / 2)
             .mapToObj(i -> (Runnable) () -> {
@@ -182,14 +139,54 @@ public class PersistentStackTest {
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                System.out.println(i);
                 stack.put(i, i);
             })
             .map(Executors::callable)
             .collect(toList());
 
         executorService.invokeAll(pushTasks);
-        stack.forEach(i -> System.out.print(i + "->"));
+
+        pushTasks = IntStream.range(THREADS_NUMBER / 2, THREADS_NUMBER)
+            .mapToObj(i -> (Runnable) () -> {
+                Thread.yield();
+                try {
+                    Thread.sleep((long) (Math.random() * 100));
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                int index = (int) (Math.random() * 100);
+                stack.put(i, index);
+            })
+            .map(Executors::callable)
+            .collect(toList());
+
+        executorService.invokeAll(pushTasks);
+        checkAddition(stack);
+    }
+
+    private List<Callable<Object>> buildPushTasks() {
+        return IntStream.range(0, THREADS_NUMBER)
+            .mapToObj(i -> (Runnable) () -> {
+                Thread.yield();
+                try {
+                    Thread.sleep((long) (Math.random() * 100));
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                stack.push(i);
+            })
+            .map(Executors::callable)
+            .collect(toList());
+    }
+
+    private void checkAddition(PersistentStack<Integer> stack) {
+        HashSet<Integer> checked = new HashSet<>();
+        stack.forEach(i -> {
+            assertThat(i, greaterThanOrEqualTo(0));
+            assertThat(i, lessThan(THREADS_NUMBER));
+            assertThat(checked.contains(i), is(false));
+            checked.add(i);
+        });
     }
 
 }

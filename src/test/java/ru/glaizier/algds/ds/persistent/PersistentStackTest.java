@@ -187,6 +187,7 @@ public class PersistentStackTest {
             assertThat(checked.contains(i), is(false));
             checked.add(i);
         });
+        assertThat(checked.size(), is(THREADS_NUMBER));
     }
 
 }

@@ -12,10 +12,10 @@ import lombok.Data;
 
 public class PersistentStack<T> {
 
-    // Todo make it static?
-    private final Node<T> fenceNode = new Node<>(null, null);
+    private static final Node FENCE_NODE = new Node<>(null, null);
 
-    private AtomicReference<Node<T>> head = new AtomicReference<>(fenceNode);
+    @SuppressWarnings("unchecked")
+    private AtomicReference<Node<T>> head = new AtomicReference<>(FENCE_NODE);
 
     @Data
     @AllArgsConstructor
@@ -40,7 +40,7 @@ public class PersistentStack<T> {
     public void put(T value, int index) {
         if (index < 0 || value == null) {
             throw new IllegalArgumentException();
-        } else if (index == 0 || head.get() == fenceNode) {
+        } else if (index == 0 || head.get() == FENCE_NODE) {
             push(value);
             return;
         }
@@ -54,41 +54,27 @@ public class PersistentStack<T> {
 
             // copying loop
             int i = 1;
-            for (; i < index && curPrev != fenceNode; curNew = curNew.getNext(), curPrev = curPrev.getNext(), i++) {
+            for (; i < index && curPrev != FENCE_NODE; curNew = curNew.getNext(), curPrev = curPrev.getNext(), i++) {
                 Node<T> copyNode = new Node<>(curPrev.getValue(), curPrev.getNext());
                 curNew.setNext(copyNode);
             }
-//            while (i < index && curPrev != fenceNode) {
-//                Node<T> copyNode = new Node<>(curPrev.getValue(), curPrev.getNext());
-//                curNew.setNext(copyNode);
-//
-//                curNew = curNew.getNext();
-//                curPrev = curPrev.getNext();
-//                i++;
-//            }
 
             // put a new node
-            // Todo remove this else after testing
-            if (i == index || curPrev == fenceNode) {
-                Node<T> putNode = new Node<>(value, curNew.getNext());
-                curNew.setNext(putNode);
-            } else {
-                throw new IllegalStateException("This never should happen!");
-            }
-
+            Node<T> putNode = new Node<>(value, curNew.getNext());
+            curNew.setNext(putNode);
             return newHead;
         });
     }
 
     public Optional<T> pop() {
-        if (head.get() == fenceNode)
+        if (head.get() == FENCE_NODE)
             return empty();
 
         return of(head.getAndUpdate(Node::getNext).getValue());
     }
 
     public Optional<T> peek() {
-        if (head.get() == fenceNode)
+        if (head.get() == FENCE_NODE)
             return empty();
 
         return of(head.get().getValue());
@@ -96,7 +82,7 @@ public class PersistentStack<T> {
 
     public Optional<T> get(T value) {
         Node<T> cur = head.get();
-        while (cur != fenceNode && !value.equals(cur.getValue())) {
+        while (cur != FENCE_NODE && !value.equals(cur.getValue())) {
             cur = cur.getNext();
         }
         return ofNullable(cur.getValue());
@@ -105,15 +91,9 @@ public class PersistentStack<T> {
     public Optional<T> get(int index) {
         if (index < 0)
             throw new IllegalArgumentException();
-//        int i = 0;
-//        while (cur != fenceNode) {
-//            if (i == index)
-//                return of(cur.getValue());
-//            cur = cur.getNext();
-//            i++;
-//        }
+
         Node<T> cur = head.get();
-        for(int i = 0; i <= index && cur != fenceNode; i++, cur = cur.getNext()) {
+        for(int i = 0; i <= index && cur != FENCE_NODE; i++, cur = cur.getNext()) {
             if (i == index)
                 return of(cur.getValue());
         }
@@ -121,7 +101,7 @@ public class PersistentStack<T> {
     }
 
     public void forEach(Consumer<? super T> action) {
-        for(Node<T> cur = head.get(); cur != fenceNode; cur = cur.getNext())
+        for(Node<T> cur = head.get(); cur != FENCE_NODE; cur = cur.getNext())
             action.accept(cur.getValue());
     }
 

@@ -18,18 +18,18 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Test;
 
-import ru.glaizier.algds.ds.functional.persistent.PersistentStack;
+import ru.glaizier.algds.ds.functional.persistent.AtomicPersistentStack;
 
 /**
  * @author GlaIZier
  */
-public class PersistentStackTest {
+public class AtomicPersistentStackTest {
 
     private static final int THREADS_NUMBER = 100;
 
     private static ExecutorService executorService = Executors.newFixedThreadPool(THREADS_NUMBER);
 
-    private PersistentStack<Integer> stack = new PersistentStack<>();
+    private AtomicPersistentStack<Integer> stack = new AtomicPersistentStack<>();
 
     @AfterClass
     public static void cleanUpFinally() {
@@ -38,7 +38,7 @@ public class PersistentStackTest {
 
     @After
     public void cleanUp() {
-        stack = new PersistentStack<>();
+        stack = new AtomicPersistentStack<>();
     }
 
     @Test
@@ -179,7 +179,7 @@ public class PersistentStackTest {
             .collect(toList());
     }
 
-    private void checkAddition(PersistentStack<Integer> stack) {
+    private void checkAddition(AtomicPersistentStack<Integer> stack) {
         HashSet<Integer> checked = new HashSet<>();
         stack.forEach(i -> {
             assertThat(i, greaterThanOrEqualTo(0));

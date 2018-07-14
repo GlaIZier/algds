@@ -1,30 +1,26 @@
 package ru.glaizier.algds.ds.functional.persistent;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
-import static java.util.Optional.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
-public class PersistentStack<T> {
+public class AtomicPersistentStack<T> {
 
-    private static final PersistentStack FENCE_NODE = new PersistentStack<>(null, null);
+    private static final Node FENCE_NODE = new Node<>(null, null);
 
     @SuppressWarnings("unchecked")
     private AtomicReference<Node<T>> head = new AtomicReference<>(FENCE_NODE);
-
-    public PersistentStack(T value, PersistentStack<T> next) {
-
-    }
 
     @Data
     @AllArgsConstructor
     private static class Node<T> {
         private final T value;
-        // Todo make it immutable?
         private Node<T> next;
     }
 

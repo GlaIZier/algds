@@ -1,38 +1,33 @@
 package ru.glaizier.algds.ds.functional.persistent;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import io.vavr.collection.List;
 
+import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
-import static java.util.Optional.*;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 
 public class PersistentStack<T> {
 
-    private static final PersistentStack FENCE_NODE = new PersistentStack<>(null, null);
+    private static final PersistentStack FENCE = new PersistentStack<>(null, null);
 
-    @SuppressWarnings("unchecked")
-    private AtomicReference<Node<T>> head = new AtomicReference<>(FENCE_NODE);
+    private final T value;
+
+    private final PersistentStack<T> next;
 
     public PersistentStack(T value, PersistentStack<T> next) {
-
+        this.value = value;
+        this.next = next;
     }
 
-    @Data
-    @AllArgsConstructor
-    private static class Node<T> {
-        private final T value;
-        // Todo make it immutable?
-        private Node<T> next;
-    }
 
-    public void push(T value) {
-        if (value == null)
-            throw new IllegalArgumentException();
-
-        head.getAndUpdate(prevHead -> new Node<>(value, prevHead));
+    public PersistentStack<T> push(T value) {
+        return null;
     }
 
 
@@ -40,72 +35,37 @@ public class PersistentStack<T> {
      * @param value
      * @param index if index is greater than the number of elements, than it will be put the last
      */
-    public void put(T value, int index) {
-        if (index < 0 || value == null) {
-            throw new IllegalArgumentException();
-        } else if (index == 0 || head.get() == FENCE_NODE) {
-            push(value);
-            return;
-        }
-
-        head.getAndUpdate(prevHead -> {
-            // create a brand new list before index
-            Node<T> curPrev = prevHead.getNext();
-            // create a new head
-            Node<T> newHead = new Node<>(prevHead.getValue(), prevHead.getNext());
-            Node<T> curNew = newHead;
-
-            // copying loop
-            int i = 1;
-            for (; i < index && curPrev != FENCE_NODE; curNew = curNew.getNext(), curPrev = curPrev.getNext(), i++) {
-                Node<T> copyNode = new Node<>(curPrev.getValue(), curPrev.getNext());
-                curNew.setNext(copyNode);
-            }
-
-            // put a new node
-            Node<T> putNode = new Node<>(value, curNew.getNext());
-            curNew.setNext(putNode);
-            return newHead;
-        });
+    public PersistentStack<T> put(T value, int index) {
+        return null;
     }
 
-    public Optional<T> pop() {
-        if (head.get() == FENCE_NODE)
-            return empty();
-
-        return of(head.getAndUpdate(Node::getNext).getValue());
+    public Optional<Entry<T, PersistentStack<T>>> pop() {
+        return (this == FENCE) ?
+                empty() :
+                of(new SimpleImmutableEntry<>(value, next));
     }
 
     public Optional<T> peek() {
-        if (head.get() == FENCE_NODE)
-            return empty();
-
-        return of(head.get().getValue());
+        return (this == FENCE) ?
+                empty() :
+                of(value);
     }
 
     public Optional<T> get(T value) {
-        Node<T> cur = head.get();
-        while (cur != FENCE_NODE && !value.equals(cur.getValue())) {
-            cur = cur.getNext();
-        }
-        return ofNullable(cur.getValue());
+        return null;
     }
 
     public Optional<T> get(int index) {
-        if (index < 0)
-            throw new IllegalArgumentException();
-
-        Node<T> cur = head.get();
-        for(int i = 0; i <= index && cur != FENCE_NODE; i++, cur = cur.getNext()) {
-            if (i == index)
-                return of(cur.getValue());
-        }
-        return empty();
+        return null;
     }
 
     public void forEach(Consumer<? super T> action) {
-        for(Node<T> cur = head.get(); cur != FENCE_NODE; cur = cur.getNext())
-            action.accept(cur.getValue());
+//        for(Node<T> cur = head.get(); cur != FENCE; cur = cur.getNext())
+//            action.accept(cur.getValue());
+    }
+
+    public static void main(String[] args) {
+        List<Integer> list = List.of(1, 2, 3);
     }
 
 }

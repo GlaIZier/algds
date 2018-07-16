@@ -123,6 +123,7 @@ public class AtomicPersistentStackTest {
     }
 
     @Test
+    // Todo replace with contains check
     public void getByValue() throws InterruptedException {
         List<Callable<Object>> pushTasks = buildPushTasks();
         executorService.invokeAll(pushTasks);

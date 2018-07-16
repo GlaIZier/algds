@@ -79,12 +79,12 @@ public class AtomicPersistentStack<T> {
         return of(head.get().getValue());
     }
 
-    public Optional<T> get(T value) {
+    public boolean contains(T value) {
         Node<T> cur = head.get();
         while (cur != FENCE_NODE && !value.equals(cur.getValue())) {
             cur = cur.getNext();
         }
-        return ofNullable(cur.getValue());
+        return cur != FENCE_NODE;
     }
 
     public Optional<T> get(int index) {
@@ -92,11 +92,14 @@ public class AtomicPersistentStack<T> {
             throw new IllegalArgumentException();
 
         Node<T> cur = head.get();
-        for(int i = 0; i <= index && cur != FENCE_NODE; i++, cur = cur.getNext()) {
-            if (i == index)
-                return of(cur.getValue());
+        int i = 0;
+        while (cur != FENCE_NODE && i < index) {
+            cur = cur.getNext();
+            i++;
         }
-        return empty();
+        return (cur == FENCE_NODE) ?
+                empty() :
+                of(cur.value);
     }
 
     public void forEach(Consumer<? super T> action) {

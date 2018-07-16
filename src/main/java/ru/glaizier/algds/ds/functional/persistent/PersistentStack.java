@@ -6,6 +6,7 @@ import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -51,12 +52,28 @@ public class PersistentStack<T> {
                 of(value);
     }
 
-    public Optional<T> get(T value) {
-        return null;
+    public boolean contains(T value) {
+        Objects.requireNonNull(value);
+
+        PersistentStack<T> cur = this;
+        while (cur != FENCE && !value.equals(cur.value))
+            cur = cur.next;
+        return cur != FENCE;
     }
 
     public Optional<T> get(int index) {
-        return null;
+        if (index < 0)
+            throw new IllegalArgumentException();
+
+        PersistentStack<T> cur = this;
+        int i = 0;
+        while (cur != FENCE && i < index) {
+            cur = cur.next;
+            i++;
+        }
+        return (cur == FENCE) ?
+                empty() :
+                of(cur.value);
     }
 
     public void forEach(Consumer<? super T> action) {

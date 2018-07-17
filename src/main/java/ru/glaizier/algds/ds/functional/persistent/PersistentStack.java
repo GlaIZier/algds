@@ -77,8 +77,8 @@ public class PersistentStack<T> {
     }
 
     public void forEach(Consumer<? super T> action) {
-//        for(Node<T> cur = head.get(); cur != FENCE; cur = cur.getNext())
-//            action.accept(cur.getValue());
+        for(PersistentStack<T> cur = this; cur != FENCE; cur = cur.next)
+            action.accept(cur.value);
     }
 
     public static void main(String[] args) {

@@ -1,6 +1,10 @@
 package ru.glaizier.algds.ds.persistent;
 
-import static java.util.stream.Collectors.toList;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Test;
+import ru.glaizier.algds.ds.functional.persistent.AtomicPersistentStack;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -10,15 +14,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.IntStream;
 
+import static java.util.stream.Collectors.toList;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Test;
-
-import ru.glaizier.algds.ds.functional.persistent.AtomicPersistentStack;
 
 /**
  * @author GlaIZier
@@ -89,7 +89,6 @@ public class AtomicPersistentStackTest {
     }
 
 
-
     @Test
     public void peekGetByIndex() throws InterruptedException {
         IntStream.range(0, THREADS_NUMBER)
@@ -128,38 +127,59 @@ public class AtomicPersistentStackTest {
         List<Callable<Object>> pushTasks = buildPushTasks();
         executorService.invokeAll(pushTasks);
         checkAddition(stack);
+
+        List<Callable<Boolean>> containsTasks = IntStream.range(0, THREADS_NUMBER)
+                .mapToObj(i -> (Callable<Boolean>) () -> {
+                    Thread.yield();
+                    try {
+                        Thread.sleep((long) (Math.random() * 100));
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return stack.contains(i);
+                })
+                .collect(toList());
+        List<Future<Boolean>> containsFutures = executorService.invokeAll(containsTasks);
+        containsFutures.forEach(future -> {
+            try {
+                assertThat(future.get(), is(true));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        assertThat(stack.contains(-1), is(false));
     }
 
     @Test
     public void put() throws InterruptedException {
         List<Callable<Object>> pushTasks = IntStream.range(0, THREADS_NUMBER / 2)
-            .mapToObj(i -> (Runnable) () -> {
-                Thread.yield();
-                try {
-                    Thread.sleep((long) (Math.random() * 100));
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                stack.put(i, i);
-            })
-            .map(Executors::callable)
-            .collect(toList());
+                .mapToObj(i -> (Runnable) () -> {
+                    Thread.yield();
+                    try {
+                        Thread.sleep((long) (Math.random() * 100));
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    stack.put(i, i);
+                })
+                .map(Executors::callable)
+                .collect(toList());
 
         executorService.invokeAll(pushTasks);
 
         pushTasks = IntStream.range(THREADS_NUMBER / 2, THREADS_NUMBER)
-            .mapToObj(i -> (Runnable) () -> {
-                Thread.yield();
-                try {
-                    Thread.sleep((long) (Math.random() * 100));
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                int index = (int) (Math.random() * 100);
-                stack.put(i, index);
-            })
-            .map(Executors::callable)
-            .collect(toList());
+                .mapToObj(i -> (Runnable) () -> {
+                    Thread.yield();
+                    try {
+                        Thread.sleep((long) (Math.random() * 100));
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    int index = (int) (Math.random() * 100);
+                    stack.put(i, index);
+                })
+                .map(Executors::callable)
+                .collect(toList());
 
         executorService.invokeAll(pushTasks);
         checkAddition(stack);
@@ -167,17 +187,17 @@ public class AtomicPersistentStackTest {
 
     private List<Callable<Object>> buildPushTasks() {
         return IntStream.range(0, THREADS_NUMBER)
-            .mapToObj(i -> (Runnable) () -> {
-                Thread.yield();
-                try {
-                    Thread.sleep((long) (Math.random() * 100));
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                stack.push(i);
-            })
-            .map(Executors::callable)
-            .collect(toList());
+                .mapToObj(i -> (Runnable) () -> {
+                    Thread.yield();
+                    try {
+                        Thread.sleep((long) (Math.random() * 100));
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    stack.push(i);
+                })
+                .map(Executors::callable)
+                .collect(toList());
     }
 
     private void checkAddition(AtomicPersistentStack<Integer> stack) {

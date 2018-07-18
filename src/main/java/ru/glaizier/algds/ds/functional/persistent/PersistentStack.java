@@ -13,13 +13,19 @@ import java.util.function.Consumer;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
+// Todo to support null values
 public class PersistentStack<T> {
 
-    private static final PersistentStack FENCE = new PersistentStack<>(null, null);
+    private static final PersistentStack<?> FENCE = new PersistentStack<>(null, null);
 
     private final T value;
 
     private final PersistentStack<T> next;
+
+    @SuppressWarnings("unchecked")
+    private static <T> PersistentStack<T> fence() {
+        return (PersistentStack<T>) FENCE;
+    }
 
     public PersistentStack(T value, PersistentStack<T> next) {
         this.value = value;
@@ -28,26 +34,49 @@ public class PersistentStack<T> {
 
 
     public PersistentStack<T> push(T value) {
-        return null;
+        return new PersistentStack<T>(value, this);
     }
 
 
+    // Todo add update() with usage of put()
     /**
      * @param value
      * @param index if index is greater than the number of elements, than it will be put the last
      */
     public PersistentStack<T> put(T value, int index) {
-        return null;
+        Objects.requireNonNull(value);
+        if (index < 0)
+            throw new IllegalArgumentException();
+        // Todo remove it?
+//        if (index == 0)
+//            return push(value);
+
+        PersistentStack<T> backwardHead = fence();
+        PersistentStack<T> cur = this;
+        int i = 0;
+        // get the the beginning of the result backwards
+        for (; i < index && cur != fence(); i++, cur = cur.next)
+            backwardHead = backwardHead.push(cur.value);
+
+        // add the new element
+        backwardHead = backwardHead.push(value);
+
+        // copy the result by turning arounf
+        PersistentStack<T> result = cur;
+        for(; backwardHead != fence(); backwardHead = backwardHead.next)
+            result = result.push(backwardHead.value);
+
+        return result;
     }
 
     public Optional<Entry<T, PersistentStack<T>>> pop() {
-        return (this == FENCE) ?
+        return (this == fence()) ?
                 empty() :
                 of(new SimpleImmutableEntry<>(value, next));
     }
 
     public Optional<T> peek() {
-        return (this == FENCE) ?
+        return (this == fence()) ?
                 empty() :
                 of(value);
     }
@@ -56,9 +85,9 @@ public class PersistentStack<T> {
         Objects.requireNonNull(value);
 
         PersistentStack<T> cur = this;
-        while (cur != FENCE && !value.equals(cur.value))
+        while (cur != fence() && !value.equals(cur.value))
             cur = cur.next;
-        return cur != FENCE;
+        return cur != fence();
     }
 
     public Optional<T> get(int index) {
@@ -67,17 +96,17 @@ public class PersistentStack<T> {
 
         PersistentStack<T> cur = this;
         int i = 0;
-        while (cur != FENCE && i < index) {
+        while (cur != fence() && i < index) {
             cur = cur.next;
             i++;
         }
-        return (cur == FENCE) ?
+        return (cur == fence()) ?
                 empty() :
                 of(cur.value);
     }
 
     public void forEach(Consumer<? super T> action) {
-        for(PersistentStack<T> cur = this; cur != FENCE; cur = cur.next)
+        for(PersistentStack<T> cur = this; cur != fence(); cur = cur.next)
             action.accept(cur.value);
     }
 

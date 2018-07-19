@@ -160,7 +160,7 @@ public class AtomicPersistentStackTest {
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
-                    stack.put(i, i);
+                    stack.add(i, i);
                 })
                 .map(Executors::callable)
                 .collect(toList());
@@ -176,7 +176,7 @@ public class AtomicPersistentStackTest {
                         throw new RuntimeException(e);
                     }
                     int index = (int) (Math.random() * 100);
-                    stack.put(i, index);
+                    stack.add(i, index);
                 })
                 .map(Executors::callable)
                 .collect(toList());

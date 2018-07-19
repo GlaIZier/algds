@@ -2,15 +2,13 @@ package ru.glaizier.algds.ds.functional.persistent;
 
 import io.vavr.collection.List;
 
-import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 
-import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
 // Todo to support null values
@@ -23,11 +21,11 @@ public class PersistentStack<T> {
     private final PersistentStack<T> next;
 
     @SuppressWarnings("unchecked")
-    private static <T> PersistentStack<T> fence() {
+    public static <T> PersistentStack<T> empty() {
         return (PersistentStack<T>) FENCE;
     }
 
-    public PersistentStack(T value, PersistentStack<T> next) {
+    private PersistentStack(T value, PersistentStack<T> next) {
         this.value = value;
         this.next = next;
     }
@@ -37,47 +35,37 @@ public class PersistentStack<T> {
         return new PersistentStack<T>(value, this);
     }
 
-
-    // Todo add update() with usage of put()
     /**
      * @param value
-     * @param index if index is greater than the number of elements, than it will be put the last
+     * @param index if index is greater than the number of elements, than it will be add the last
      */
-    public PersistentStack<T> put(T value, int index) {
-        Objects.requireNonNull(value);
-        if (index < 0)
-            throw new IllegalArgumentException();
-        // Todo remove it?
-//        if (index == 0)
-//            return push(value);
+    public PersistentStack<T> add(T value, int index) {
+        return update(value, index, (backwardHead, tail) -> {
+            // add the new element
+            backwardHead = backwardHead.push(value);
+            return merge(backwardHead, tail);
+        });
+    }
 
-        PersistentStack<T> backwardHead = fence();
-        PersistentStack<T> cur = this;
-        int i = 0;
-        // get the the beginning of the result backwards
-        for (; i < index && cur != fence(); i++, cur = cur.next)
-            backwardHead = backwardHead.push(cur.value);
-
-        // add the new element
-        backwardHead = backwardHead.push(value);
-
-        // copy the result by turning arounf
-        PersistentStack<T> result = cur;
-        for(; backwardHead != fence(); backwardHead = backwardHead.next)
-            result = result.push(backwardHead.value);
-
-        return result;
+    public PersistentStack<T> update(T value, int index) {
+        return update(value, index, (backwardHead, tail) -> {
+            // add the new element
+            backwardHead = backwardHead.push(value);
+            // skip the updated element
+            tail = tail.next;
+            return merge(backwardHead, tail);
+        });
     }
 
     public Optional<Entry<T, PersistentStack<T>>> pop() {
-        return (this == fence()) ?
-                empty() :
+        return (this == empty()) ?
+                Optional.empty() :
                 of(new SimpleImmutableEntry<>(value, next));
     }
 
     public Optional<T> peek() {
-        return (this == fence()) ?
-                empty() :
+        return (this == empty()) ?
+                Optional.empty() :
                 of(value);
     }
 
@@ -85,9 +73,9 @@ public class PersistentStack<T> {
         Objects.requireNonNull(value);
 
         PersistentStack<T> cur = this;
-        while (cur != fence() && !value.equals(cur.value))
+        while (cur != empty() && !value.equals(cur.value))
             cur = cur.next;
-        return cur != fence();
+        return cur != empty();
     }
 
     public Optional<T> get(int index) {
@@ -96,18 +84,45 @@ public class PersistentStack<T> {
 
         PersistentStack<T> cur = this;
         int i = 0;
-        while (cur != fence() && i < index) {
+        while (cur != empty() && i < index) {
             cur = cur.next;
             i++;
         }
-        return (cur == fence()) ?
-                empty() :
+        return (cur == empty()) ?
+                Optional.empty() :
                 of(cur.value);
     }
 
     public void forEach(Consumer<? super T> action) {
-        for(PersistentStack<T> cur = this; cur != fence(); cur = cur.next)
+        for (PersistentStack<T> cur = this; cur != empty(); cur = cur.next)
             action.accept(cur.value);
+    }
+
+    private PersistentStack<T> update(T value, int index, BinaryOperator<PersistentStack<T>> merger) {
+        Objects.requireNonNull(value);
+        if (index < 0)
+            throw new IllegalArgumentException();
+        // Todo remove it?
+//        if (index == 0)
+//            return push(value);
+
+        PersistentStack<T> backwardHead = empty();
+        PersistentStack<T> cur = this;
+        int i = 0;
+        // get the the beginning of the result backwards
+        for (; i < index && cur != empty(); i++, cur = cur.next)
+            backwardHead = backwardHead.push(cur.value);
+
+        return merger.apply(backwardHead, cur);
+    }
+
+    private PersistentStack<T> merge(PersistentStack<T> backwardHead, PersistentStack<T> tail) {
+        // copy the result by turning around backwardHead
+        PersistentStack<T> result = tail;
+        for (; backwardHead != empty(); backwardHead = backwardHead.next)
+            result = result.push(backwardHead.value);
+
+        return result;
     }
 
     public static void main(String[] args) {

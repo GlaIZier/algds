@@ -39,16 +39,16 @@ public class PersistentStack<T> {
      * @param value
      * @param index if index is greater than the number of elements, than it will be add the last
      */
-    public PersistentStack<T> add(T value, int index) {
-        return update(value, index, (backwardHead, tail) -> {
+    public PersistentStack<T> add(int index, T value) {
+        return update(index, value, (backwardHead, tail) -> {
             // add the new element
             backwardHead = backwardHead.push(value);
             return merge(backwardHead, tail);
         });
     }
 
-    public PersistentStack<T> update(T value, int index) {
-        return update(value, index, (backwardHead, tail) -> {
+    public PersistentStack<T> update(int index, T value) {
+        return update(index, value, (backwardHead, tail) -> {
             // add the new element
             backwardHead = backwardHead.push(value);
             // skip the updated element
@@ -98,7 +98,7 @@ public class PersistentStack<T> {
             action.accept(cur.value);
     }
 
-    private PersistentStack<T> update(T value, int index, BinaryOperator<PersistentStack<T>> merger) {
+    private PersistentStack<T> update(int index, T value, BinaryOperator<PersistentStack<T>> merger) {
         Objects.requireNonNull(value);
         if (index < 0)
             throw new IllegalArgumentException();

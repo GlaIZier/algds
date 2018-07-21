@@ -11,7 +11,6 @@ import java.util.function.Consumer;
 
 import static java.util.Optional.of;
 
-// Todo to support null values
 public class PersistentStack<T> {
 
     private static final PersistentStack<?> FENCE = new PersistentStack<>(null, null);
@@ -36,8 +35,7 @@ public class PersistentStack<T> {
     }
 
     /**
-     * @param value
-     * @param index if index is greater than the number of elements, than it will be add the last
+     * @param index if index is greater than the number of elements, than it will be added the last
      */
     public PersistentStack<T> add(int index, T value) {
         return update(index, value, (backwardHead, tail) -> {
@@ -47,8 +45,14 @@ public class PersistentStack<T> {
         });
     }
 
+    /**
+     *
+     * @param index if index is greater than the number of elements, {@code IndexOutOfBoundsException} will be thrown
+     */
     public PersistentStack<T> update(int index, T value) {
         return update(index, value, (backwardHead, tail) -> {
+            if (tail == empty())
+                throw new IndexOutOfBoundsException();
             // add the new element
             backwardHead = backwardHead.push(value);
             // skip the updated element
@@ -102,9 +106,6 @@ public class PersistentStack<T> {
         Objects.requireNonNull(value);
         if (index < 0)
             throw new IllegalArgumentException();
-        // Todo remove it?
-//        if (index == 0)
-//            return push(value);
 
         PersistentStack<T> backwardHead = empty();
         PersistentStack<T> cur = this;
@@ -123,10 +124,6 @@ public class PersistentStack<T> {
             result = result.push(backwardHead.value);
 
         return result;
-    }
-
-    public static void main(String[] args) {
-        List<Integer> list = List.of(1, 2, 3);
     }
 
 }

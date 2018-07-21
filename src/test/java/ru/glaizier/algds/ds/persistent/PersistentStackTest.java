@@ -82,5 +82,42 @@ public class PersistentStackTest {
         assertThat(add6Again.get(7).isPresent(), is(false));
     }
 
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void updateGet() {
+        PersistentStack<Integer> stack = empty.push(1).push(2).push(3);
+
+        PersistentStack<Integer> update0 = stack.update(0, -3);
+        assertThat(update0.peek().get(), is(-3));
+        assertThat(update0.get(0).get(), is(-3));
+        assertThat(update0.get(1).get(), is(2));
+        assertThat(update0.get(2).get(), is(1));
+        assertThat(update0.get(3).isPresent(), is(false));
+
+        PersistentStack<Integer> update1 = update0.update(1, -2);
+        assertThat(update1.peek().get(), is(-3));
+        assertThat(update1.get(0).get(), is(-3));
+        assertThat(update1.get(1).get(), is(-2));
+        assertThat(update1.get(2).get(), is(1));
+        assertThat(update1.get(3).isPresent(), is(false));
+
+        PersistentStack<Integer> update2 = update1.update(2, -1);
+        assertThat(update2.peek().get(), is(-3));
+        assertThat(update2.get(0).get(), is(-3));
+        assertThat(update2.get(1).get(), is(-2));
+        assertThat(update2.get(2).get(), is(-1));
+        assertThat(update2.get(3).isPresent(), is(false));
+
+        update2.update(3, -100);
+    }
+
+    @Test
+    public void contains() {
+        PersistentStack<Integer> stack = empty.push(1).push(2).push(3);
+
+        assertThat(stack.contains(1), is(true));
+        assertThat(stack.contains(2), is(true));
+        assertThat(stack.contains(3), is(true));
+        assertThat(stack.contains(0), is(false));
+    }
 
 }

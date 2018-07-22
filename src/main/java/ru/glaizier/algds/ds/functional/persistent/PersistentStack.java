@@ -1,7 +1,5 @@
 package ru.glaizier.algds.ds.functional.persistent;
 
-import io.vavr.collection.List;
-
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -31,6 +29,7 @@ public class PersistentStack<T> {
 
 
     public PersistentStack<T> push(T value) {
+        Objects.requireNonNull(value);
         return new PersistentStack<T>(value, this);
     }
 
@@ -38,6 +37,8 @@ public class PersistentStack<T> {
      * @param index if index is greater than the number of elements, than it will be added the last
      */
     public PersistentStack<T> add(int index, T value) {
+        Objects.requireNonNull(value);
+
         return update(index, value, (backwardHead, tail) -> {
             // add the new element
             backwardHead = backwardHead.push(value);
@@ -50,6 +51,8 @@ public class PersistentStack<T> {
      * @param index if index is greater than the number of elements, {@code IndexOutOfBoundsException} will be thrown
      */
     public PersistentStack<T> update(int index, T value) {
+        Objects.requireNonNull(value);
+
         return update(index, value, (backwardHead, tail) -> {
             if (tail == empty())
                 throw new IndexOutOfBoundsException();

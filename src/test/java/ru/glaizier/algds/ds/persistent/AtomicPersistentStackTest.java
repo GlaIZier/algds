@@ -12,6 +12,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
@@ -45,7 +46,7 @@ public class AtomicPersistentStackTest {
     public void push() throws InterruptedException {
         List<Callable<Object>> pushTasks = buildPushTasks();
         executorService.invokeAll(pushTasks);
-        checkAddition(stack);
+        checkAddition(stack::forEach);
     }
 
     @Test
@@ -125,7 +126,7 @@ public class AtomicPersistentStackTest {
     public void contains() throws InterruptedException {
         List<Callable<Object>> pushTasks = buildPushTasks();
         executorService.invokeAll(pushTasks);
-        checkAddition(stack);
+        checkAddition(stack::forEach);
 
         List<Callable<Boolean>> containsTasks = IntStream.range(0, THREADS_NUMBER)
                 .mapToObj(i -> (Callable<Boolean>) () -> {
@@ -181,7 +182,7 @@ public class AtomicPersistentStackTest {
                 .collect(toList());
 
         executorService.invokeAll(pushTasks);
-        checkAddition(stack);
+        checkAddition(stack::forEach);
     }
 
     private List<Callable<Object>> buildPushTasks() {
@@ -199,9 +200,9 @@ public class AtomicPersistentStackTest {
                 .collect(toList());
     }
 
-    private void checkAddition(AtomicPersistentStack<Integer> stack) {
+    static void checkAddition(Consumer<Consumer<? super Integer>> forEach) {
         HashSet<Integer> checked = new HashSet<>();
-        stack.forEach(i -> {
+        forEach.accept(i -> {
             assertThat(i, greaterThanOrEqualTo(0));
             assertThat(i, lessThan(THREADS_NUMBER));
             assertThat(checked.contains(i), is(false));

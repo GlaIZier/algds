@@ -2,7 +2,6 @@ package ru.glaizier.algds.ds.functional.persistent;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -36,7 +35,7 @@ public class AtomicPersistentStack<T> {
      * @param value
      * @param index if index is greater than the number of elements, than it will be add the last
      */
-    public void add(T value, int index) {
+    public void add(int index, T value) {
         if (index < 0 || value == null) {
             throw new IllegalArgumentException();
         } else if (index == 0 || head.get() == FENCE_NODE) {

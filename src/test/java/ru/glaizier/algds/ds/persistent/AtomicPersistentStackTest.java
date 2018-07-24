@@ -1,10 +1,6 @@
 package ru.glaizier.algds.ds.persistent;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Test;
-import ru.glaizier.algds.ds.functional.persistent.AtomicPersistentStack;
-
+import static java.util.stream.Collectors.toList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -15,11 +11,15 @@ import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
-import static java.util.stream.Collectors.toList;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Test;
+
+import ru.glaizier.algds.ds.functional.persistent.AtomicPersistentStack;
 
 /**
  * @author GlaIZier
@@ -151,7 +151,7 @@ public class AtomicPersistentStackTest {
     }
 
     @Test
-    public void put() throws InterruptedException {
+    public void add() throws InterruptedException {
         List<Callable<Object>> pushTasks = IntStream.range(0, THREADS_NUMBER / 2)
                 .mapToObj(i -> (Runnable) () -> {
                     Thread.yield();
@@ -176,7 +176,7 @@ public class AtomicPersistentStackTest {
                         throw new RuntimeException(e);
                     }
                     int index = (int) (Math.random() * 100);
-                    stack.add(i, index);
+                    stack.add(index, i);
                 })
                 .map(Executors::callable)
                 .collect(toList());

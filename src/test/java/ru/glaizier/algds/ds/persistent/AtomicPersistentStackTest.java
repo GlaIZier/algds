@@ -91,7 +91,7 @@ public class AtomicPersistentStackTest {
 
 
     @Test
-    public void peekGetByIndex() throws InterruptedException {
+    public void peekGet() throws InterruptedException {
         IntStream.range(0, THREADS_NUMBER)
                 .forEach(stack::push);
 

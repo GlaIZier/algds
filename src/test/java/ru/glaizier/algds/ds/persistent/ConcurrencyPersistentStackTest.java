@@ -187,4 +187,92 @@ public class ConcurrencyPersistentStackTest {
 
         assertThat(stack.get().pop(), is(Optional.empty()));
     }
+
+    @Test
+    public void get() throws InterruptedException {
+        IntStream.range(0, THREADS_NUMBER)
+            .forEach(i -> stack.set(stack.get().push(i)));
+
+        List<Callable<Optional<Integer>>> getTasks = IntStream.range(0, THREADS_NUMBER)
+            .mapToObj(i -> (Callable<Optional<Integer>>) () -> {
+                Thread.yield();
+                try {
+                    Thread.sleep((long) (Math.random() * 100));
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                return stack.get().get(i);
+            })
+            .collect(toList());
+
+        List<Future<Optional<Integer>>> futures = executorService.invokeAll(getTasks);
+
+        assertThat(futures.size(), is(THREADS_NUMBER));
+        IntStream.range(0, THREADS_NUMBER)
+            .forEach(i -> {
+                try {
+                    assertThat(futures.get(THREADS_NUMBER - 1 - i).get().get(), is(i));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+    }
+
+    @Test
+    public void peek() throws InterruptedException {
+        IntStream.range(0, THREADS_NUMBER)
+            .forEach(i -> stack.set(stack.get().push(i)));
+
+        List<Callable<Optional<Integer>>> peekTasks = IntStream.range(0, THREADS_NUMBER)
+            .mapToObj(i -> (Callable<Optional<Integer>>) () -> {
+                Thread.yield();
+                try {
+                    Thread.sleep((long) (Math.random() * 100));
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                return stack.get().peek();
+            })
+            .collect(toList());
+
+        List<Future<Optional<Integer>>> futures = executorService.invokeAll(peekTasks);
+
+        assertThat(futures.size(), is(THREADS_NUMBER));
+        IntStream.range(0, THREADS_NUMBER)
+            .forEach(i -> {
+                try {
+                    assertThat(futures.get(THREADS_NUMBER - 1 - i).get().get(), is(THREADS_NUMBER - 1));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+    }
+
+    @Test
+    public void contains() throws InterruptedException {
+        List<Callable<Object>> pushTasks = buildPushTasks();
+        executorService.invokeAll(pushTasks);
+        checkAddition(stack.get()::forEach);
+
+        List<Callable<Boolean>> containsTasks = IntStream.range(0, THREADS_NUMBER)
+            .mapToObj(i -> (Callable<Boolean>) () -> {
+                Thread.yield();
+                try {
+                    Thread.sleep((long) (Math.random() * 100));
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                return stack.get().contains(i);
+            })
+            .collect(toList());
+        List<Future<Boolean>> containsFutures = executorService.invokeAll(containsTasks);
+        containsFutures.forEach(future -> {
+            try {
+                assertThat(future.get(), is(true));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        assertThat(stack.get().contains(-1), is(false));
+    }
 }

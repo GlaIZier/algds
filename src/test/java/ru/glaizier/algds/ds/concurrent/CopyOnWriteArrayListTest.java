@@ -39,21 +39,41 @@ public class CopyOnWriteArrayListTest {
     public void addSetRemoveConcurrently() throws InterruptedException {
         // add
         List<Callable<Object>> additionTasks = IntStream.range(0, THREADS_NUMBER)
-            .mapToObj(i -> (Runnable) () -> array.add(i))
+            .mapToObj(i -> (Runnable) () -> {
+                Thread.yield();
+                try {
+                    Thread.sleep((long) (Math.random() * 100));
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                array.add(i);
+            })
             .map(Executors::callable)
             .collect(toList());
 
         executorService.invokeAll(additionTasks);
 
         assertThat(array.size(), is(THREADS_NUMBER));
+//        array.stream().forEach(i -> System.out.print(i + "-"));
         IntStream.range(0, THREADS_NUMBER)
-            .forEach(i -> assertThat(array.contains(i), is(true)));
+            .forEach(i -> {
+//                System.out.print(i + "-");
+                assertThat(array.contains(i), is(true));
+            });
         assertThat(array.get(0), greaterThanOrEqualTo(0));
         List<Integer> addedElements = array.stream().collect(toList());
 
         // set
         List<Callable<Object>> setTasks = IntStream.range(0, THREADS_NUMBER)
-            .mapToObj(i -> (Runnable) () -> array.set(i, array.get(i) + 1))
+            .mapToObj(i -> (Runnable) () -> {
+                Thread.yield();
+                try {
+                    Thread.sleep((long) (Math.random() * 100));
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                array.set(i, array.get(i) + 1);
+            })
             .map(Executors::callable)
             .collect(toList());
 
@@ -67,7 +87,15 @@ public class CopyOnWriteArrayListTest {
 
         //remove by Object as remove by index doesn't always lead to an empty list because of elements shift
         List<Callable<Object>> removeTasks = IntStream.rangeClosed(1, THREADS_NUMBER)
-            .mapToObj(i -> (Runnable) () -> array.remove((Object) i))
+            .mapToObj(i -> (Runnable) () -> {
+                Thread.yield();
+                try {
+                    Thread.sleep((long) (Math.random() * 100));
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                array.remove((Object) i);
+            })
             .map(Executors::callable)
             .collect(toList());
 

@@ -10,16 +10,18 @@ public class CopyOnWriteArrayList<T> {
     private AtomicReference<ArrayList<T>> array = new AtomicReference<>(new ArrayList<>());
 
     public void add(T elem) {
-        array.getAndUpdate(array -> {
-            array.add(elem);
-            return array;
+        array.getAndUpdate(prevArray -> {
+            ArrayList<T> newArray = new ArrayList<>(prevArray);
+            newArray.add(elem);
+            return newArray;
         });
     }
 
     public void add(int index, T elem) {
-        array.getAndUpdate(array -> {
-            array.add(index, elem);
-            return array;
+        array.getAndUpdate(prevArray -> {
+            ArrayList<T> newArray = new ArrayList<>(prevArray);
+            newArray.add(index, elem);
+            return newArray;
         });
     }
 

@@ -161,7 +161,6 @@ public class ConcurrencyPersistentStackTest {
                 }
                 PersistentStack<Integer> popped = stack
                     .getAndUpdate(s -> s.pop().orElseThrow(IllegalStateException::new).getValue());
-                System.out.print(popped.pop().get().getKey() + "->");
                 return popped.pop().orElseThrow(IllegalStateException::new).getKey();
             })
             .collect(toList());

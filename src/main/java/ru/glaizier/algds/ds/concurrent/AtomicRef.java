@@ -1,9 +1,10 @@
 package ru.glaizier.algds.ds.concurrent;
 
-import sun.misc.Unsafe;
-
 import java.lang.reflect.Field;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BinaryOperator;
+import java.util.function.UnaryOperator;
+
+import sun.misc.Unsafe;
 
 public class AtomicRef<V> {
     private static final Unsafe unsafe = getUnsafe();
@@ -37,8 +38,39 @@ public class AtomicRef<V> {
 
     public AtomicRef() {}
 
-    public static void main(String[] args) {
-        System.out.println("valueOffset = " + valueOffset);
+    public V get() {
+        return value;
+    }
+
+    public void set(V newValue) {
+        this.value = newValue;
+    }
+
+    public boolean compareAndSet(V expect, V update) {
+        return unsafe.compareAndSwapObject(this, valueOffset, expect, update);
+    }
+
+    @SuppressWarnings("unchecked")
+    public V getAndSet(V newValue) {
+        return (V) unsafe.getAndSetObject(this, valueOffset, newValue);
+    }
+
+    public V getAndUpdate(UnaryOperator<V> transformer) {
+        V prev, next;
+        do {
+            prev = get();
+            next = transformer.apply(prev);
+        } while (!compareAndSet(prev, next));
+        return prev;
+    }
+
+    public V getAndAccumulate(V addition, BinaryOperator<V> accumulator) {
+        V prev, next;
+        do {
+            prev = get();
+            next = accumulator.apply(prev, addition);
+        } while (!compareAndSet(prev, next));
+        return prev;
     }
 
 }

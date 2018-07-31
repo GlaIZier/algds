@@ -17,7 +17,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Test;
 
-public class CopyOnWriteArrayListTest {
+public class ConcurrencyCopyOnWriteArrayListTest {
 
     private static final int THREADS_NUMBER = 100;
 

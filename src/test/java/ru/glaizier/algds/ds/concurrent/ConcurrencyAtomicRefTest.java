@@ -3,6 +3,7 @@ package ru.glaizier.algds.ds.concurrent;
 import static java.util.stream.Collectors.toList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -110,6 +111,69 @@ public class ConcurrencyAtomicRefTest {
 
         executorService.invokeAll(compareAndSetTasks);
         assertThat(ref.get(), is(THREADS_NUMBER));
+    }
+
+    @Test
+    public void getAndSet() throws InterruptedException {
+        ConcurrentHashMap<Integer, Boolean> set = new ConcurrentHashMap<>();
+        // consequent concurrent set
+        List<Callable<Object>> tasks = IntStream.range(0, THREADS_NUMBER)
+            .mapToObj(i -> (Runnable) () -> {
+                Thread.yield();
+                try {
+                    Thread.sleep((long) (Math.random() * 100));
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                set.put(ref.getAndSet(i + 1), true);
+            })
+            .map(Executors::callable)
+            .collect(toList());
+
+        executorService.invokeAll(tasks);
+        assertThat(set.size(), is(THREADS_NUMBER));
+    }
+
+    @Test
+    public void getAndUpdate() throws InterruptedException {
+        ConcurrentHashMap<Integer, Boolean> set = new ConcurrentHashMap<>();
+        // consequent concurrent set
+        List<Callable<Object>> tasks = IntStream.range(0, THREADS_NUMBER)
+            .mapToObj(i -> (Runnable) () -> {
+                Thread.yield();
+                try {
+                    Thread.sleep((long) (Math.random() * 100));
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                set.put(ref.getAndUpdate(prevI -> prevI + 1), true);
+            })
+            .map(Executors::callable)
+            .collect(toList());
+
+        executorService.invokeAll(tasks);
+        assertThat(set.size(), is(THREADS_NUMBER));
+    }
+
+    @Test
+    public void getAndAccumulate() throws InterruptedException {
+        ConcurrentHashMap<Integer, Boolean> set = new ConcurrentHashMap<>();
+        // consequent concurrent set
+        List<Callable<Object>> tasks = IntStream.range(0, THREADS_NUMBER)
+            .mapToObj(i -> (Runnable) () -> {
+                Thread.yield();
+                try {
+                    Thread.sleep((long) (Math.random() * 100));
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                set.put(ref.getAndAccumulate(1, Integer::sum), true);
+            })
+            .map(Executors::callable)
+            .collect(toList());
+
+        executorService.invokeAll(tasks);
+        assertThat(set.size(), is(THREADS_NUMBER));
     }
 
 }
